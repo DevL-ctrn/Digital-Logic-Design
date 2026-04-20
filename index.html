@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LogicForge — Digital Logic Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0A0A0F;
+  --bg2:      #111118;
+  --bg3:      #1A1A24;
+  --border:   #2A2A3A;
+  --border2:  #3A3A50;
+  --text:     #E8E8F0;
+  --muted:    #7070A0;
+  --accent:   #00FF88;
+  --accent2:  #00CCFF;
+  --accent3:  #FF6B35;
+  --danger:   #FF4466;
+  --purple:   #A855F7;
+  --mono:     'Space Mono', monospace;
+  --sans:     'Syne', sans-serif;
+  --radius:   8px;
+  --glow:     0 0 20px rgba(0,255,136,0.3);
+  --glow2:    0 0 20px rgba(0,204,255,0.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── LAYOUT ── */
+.app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.logo-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav { padding: 16px 0; flex: 1; }
+.nav-section {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 20px 4px;
+  margin-top: 8px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  border-left: 2px solid transparent;
+  transition: all .15s;
+  user-select: none;
+}
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: rgba(0,255,136,0.05);
+}
+.nav-item .nav-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-item.active .nav-icon { opacity: 1; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  margin-left: 220px;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.page { display: none; padding: 32px 40px; max-width: 1200px; }
+.page.active { display: block; }
+
+.page-header {
+  margin-bottom: 32px;
+}
+.page-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.page-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+.page-desc {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 20px; height: 1px;
+  background: var(--accent2);
+}
+
+/* ── GRID ── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  border: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 1px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+.btn-primary:hover { box-shadow: var(--glow); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+/* ── INPUTS ── */
+.input, .select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 10px 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color .15s;
+}
+.input:focus, .select:focus { border-color: var(--accent); }
+.select option { background: var(--bg3); }
+
+label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ── DISPLAY ── */
+.display {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: right;
+  letter-spacing: 2px;
+  min-height: 60px;
+  word-break: break-all;
+}
+
+/* ── CALC GRID ── */
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.calc-btn {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+}
+.calc-btn:hover { background: var(--border2); border-color: var(--accent2); color: var(--accent2); }
+.calc-btn.op { color: var(--accent2); border-color: var(--border2); }
+.calc-btn.logic { color: var(--accent); border-color: rgba(0,255,136,0.3); }
+.calc-btn.special { color: var(--accent3); border-color: rgba(255,107,53,0.3); }
+.calc-btn.equals {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.calc-btn.equals:hover { box-shadow: var(--glow); }
+.calc-btn.clear { color: var(--danger); }
+.calc-btn.wide { grid-column: span 2; }
+
+/* ── TRUTH TABLE ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+th {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  text-align: center;
+  color: var(--accent2);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+td {
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  text-align: center;
+  color: var(--text);
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+td.one { color: var(--accent); font-weight: 700; }
+td.zero { color: var(--muted); }
+
+/* ── GATE SVG ── */
+.gate-canvas-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.gate-canvas-wrap svg {
+  display: block;
+}
+
+/* ── BADGE ── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.badge-green { background: rgba(0,255,136,0.1); color: var(--accent); border: 1px solid rgba(0,255,136,0.3); }
+.badge-blue  { background: rgba(0,204,255,0.1); color: var(--accent2); border: 1px solid rgba(0,204,255,0.3); }
+.badge-orange{ background: rgba(255,107,53,0.1); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
+
+/* ── KMAP ── */
+.kmap-table { width: auto; margin: 0 auto; }
+.kmap-table th { background: var(--bg3); padding: 12px 20px; font-size: 12px; }
+.kmap-table td {
+  width: 70px; height: 70px;
+  font-size: 20px; font-weight: 800;
+  cursor: pointer;
+  transition: background .12s;
+  font-family: var(--mono);
+}
+.kmap-table td:hover { background: rgba(0,255,136,0.08); }
+.kmap-table td.kmap-1 { color: var(--accent); background: rgba(0,255,136,0.06); }
+.kmap-table td.kmap-0 { color: var(--muted); }
+.kmap-table td.kmap-x { color: var(--accent3); }
+
+/* ── BOOLEAN ALGEBRA ── */
+.bool-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.bool-step:last-child { border-bottom: none; }
+.step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-expr {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.step-law {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── CIRCUIT ── */
+#circuit-canvas {
+  background: var(--bg);
+  cursor: crosshair;
+  display: block;
+  border-radius: var(--radius);
+}
+
+.gate-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.palette-btn {
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.palette-btn:hover, .palette-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(0,255,136,0.05);
+}
+
+/* ── CONVERSION ── */
+.conv-result {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--accent);
+  margin-top: 6px;
+  min-height: 46px;
+  letter-spacing: 2px;
+}
+.conv-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ── REFERENCE ── */
+.ref-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.ref-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent2);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ref-formula {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  letter-spacing: 1px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .3s;
+  box-shadow: var(--glow);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.page.active { animation: fadeIn .25s ease; }
+
+@keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(0,255,136,0); } 50%{ box-shadow: 0 0 0 6px rgba(0,255,136,0.1); } }
+.pulsing { animation: pulse 2s infinite; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">v1.0.0</div>
+    <div class="logo-title">LogicForge</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Tools</div>
+    <div class="nav-item active" onclick="showPage('home')" id="nav-home">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showPage('calculator')" id="nav-calculator">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      Calculator
+    </div>
+    <div class="nav-item" onclick="showPage('gates')" id="nav-gates">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Logic Gates
+    </div>
+    <div class="nav-item" onclick="showPage('truth')" id="nav-truth">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      Truth Tables
+    </div>
+    <div class="nav-section">Analysis</div>
+    <div class="nav-item" onclick="showPage('boolean')" id="nav-boolean">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+      Boolean Algebra
+    </div>
+    <div class="nav-item" onclick="showPage('kmap')" id="nav-kmap">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      Karnaugh Map
+    </div>
+    <div class="nav-section">Design</div>
+    <div class="nav-item" onclick="showPage('circuit')" id="nav-circuit">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Circuit Builder
+    </div>
+    <div class="nav-section">Components</div>
+    <div class="nav-item" onclick="showPage('mux')" id="nav-mux">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/></svg>
+      Multiplexers
+    </div>
+    <div class="nav-item" onclick="showPage('decoder')" id="nav-decoder">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      Decoders
+    </div>
+    <div class="nav-item" onclick="showPage('sequential')" id="nav-sequential">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Sequential
+    </div>
+    <div class="nav-item" onclick="showPage('reference')" id="nav-reference">
+      <svg class="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+      Reference
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    LogicForge © 2025<br>Digital Logic Tools
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+<!-- ══════════════════════ PAGE: HOME ══════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <div class="page-tag">// welcome</div>
+    <div class="page-title">Digital Logic Design</div>
+    <div class="page-desc">A complete toolkit for digital logic design. Build circuits, simplify boolean expressions, analyse truth tables, and explore logic gates.</div>
+  </div>
+
+  <div class="grid3" style="margin-bottom:20px">
+    <div class="card" style="border-color:rgba(0,255,136,0.3);cursor:pointer" onclick="showPage('calculator')">
+      <div style="font-size:32px;margin-bottom:12px">⊕</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Logic Calculator</div>
+      <div style="font-size:13px;color:var(--muted)">AND, OR, NOT, NAND, NOR, XOR operations with binary and hex support.</div>
+      <div style="margin-top:12px"><span class="badge badge-green">Calculator</span></div>
+    </div>
+    <div class="card" style="border-color:rgba(0,204,255,0.3);cursor:pointer" onclick="showPage('gates')">
+      <div style="font-size:32px;margin-bottom:12px">◈</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Gate Visualiser</div>
+      <div style="font-size:13px;color:var(--muted)">Interactive drawings of all standard logic gates with live input toggling.</div>
+      <div style="margin-top:12px"><span class="badge badge-blue">Visual</span></div>
+    </div>
+    <div class="card" style="border-color:rgba(255,107,53,0.3);cursor:pointer" onclick="showPage('truth')">
+      <div style="font-size:32px;margin-bottom:12px">⊞</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">Truth Tables</div>
+      <div style="font-size:13px;color:var(--muted)">Generate complete truth tables for any boolean expression instantly.</div>
+      <div style="margin-top:12px"><span class="badge badge-orange">Analysis</span></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="cursor:pointer" onclick="showPage('boolean')">
+      <div class="card-title">Boolean Algebra</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Simplify boolean expressions step-by-step using De Morgan's, Absorption, and other laws.</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--accent);padding:8px;background:var(--bg);border-radius:4px">
+        A·(A+B) = A<br>
+        A+A·B = A<br>
+        ¬(A·B) = ¬A+¬B
+      </div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="showPage('kmap')">
+      <div class="card-title">Karnaugh Map</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Minimise boolean functions with 2, 3, or 4 variables using interactive K-maps.</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;max-width:120px">
+        <div style="background:rgba(0,255,136,0.15);border:1px solid var(--border);padding:6px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--accent)">1</div>
+        <div style="background:var(--bg3);border:1px solid var(--border);padding:6px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted)">0</div>
+        <div style="background:rgba(0,255,136,0.15);border:1px solid var(--border);padding:6px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--accent)">1</div>
+        <div style="background:rgba(0,255,136,0.15);border:1px solid var(--border);padding:6px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--accent)">1</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="cursor:pointer" onclick="showPage('circuit')">
+      <div class="card-title">Circuit Builder</div>
+      <div style="font-size:13px;color:var(--muted)">Drag-and-drop logic gate circuit builder. Connect gates and simulate signal flow.</div>
+    </div>
+    <div class="card" style="cursor:pointer" onclick="showPage('reference')">
+      <div class="card-title">Reference Sheet</div>
+      <div style="font-size:13px;color:var(--muted)">Complete reference for gate symbols, boolean laws, number systems and conversion formulas.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: CALCULATOR ══════════════════════ -->
+<div class="page" id="page-calculator">
+  <div class="page-header">
+    <div class="page-tag">// tool_01</div>
+    <div class="page-title">Logic Calculator</div>
+    <div class="page-desc">Perform bitwise and boolean operations. Supports decimal, binary, and hexadecimal.</div>
+  </div>
+
+  <div class="grid2">
+    <!-- Main calc -->
+    <div class="card">
+      <div class="card-title">Bitwise Calculator</div>
+      <div style="margin-bottom:12px">
+        <div class="display" id="calc-display">0</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;text-align:right" id="calc-sub"></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label>Number Base</label>
+        <select class="select" id="calc-base" onchange="calcBaseChange()">
+          <option value="10">Decimal (Base 10)</option>
+          <option value="2">Binary (Base 2)</option>
+          <option value="16">Hexadecimal (Base 16)</option>
+        </select>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-btn clear" onclick="calcClear()">CLR</button>
+        <button class="calc-btn special" onclick="calcDel()">DEL</button>
+        <button class="calc-btn logic" onclick="calcOp('NOT')">NOT</button>
+        <button class="calc-btn op" onclick="calcOp('SHL')">SHL</button>
+        <button class="calc-btn logic" onclick="calcOp('AND')">AND</button>
+        <button class="calc-btn logic" onclick="calcOp('OR')">OR</button>
+        <button class="calc-btn logic" onclick="calcOp('XOR')">XOR</button>
+        <button class="calc-btn op" onclick="calcOp('SHR')">SHR</button>
+        <button class="calc-btn" onclick="calcDigit('7')">7</button>
+        <button class="calc-btn" onclick="calcDigit('8')">8</button>
+        <button class="calc-btn" onclick="calcDigit('9')">9</button>
+        <button class="calc-btn logic" onclick="calcOp('NAND')">NAND</button>
+        <button class="calc-btn" onclick="calcDigit('4')">4</button>
+        <button class="calc-btn" onclick="calcDigit('5')">5</button>
+        <button class="calc-btn" onclick="calcDigit('6')">6</button>
+        <button class="calc-btn logic" onclick="calcOp('NOR')">NOR</button>
+        <button class="calc-btn" onclick="calcDigit('1')">1</button>
+        <button class="calc-btn" onclick="calcDigit('2')">2</button>
+        <button class="calc-btn" onclick="calcDigit('3')">3</button>
+        <button class="calc-btn logic" onclick="calcOp('XNOR')">XNOR</button>
+        <button class="calc-btn wide" onclick="calcDigit('0')">0</button>
+        <button class="calc-btn op" onclick="calcEnter()">=</button>
+        <button class="calc-btn equals" onclick="calcEval()">=</button>
+      </div>
+      <div id="hex-pad" style="display:none;margin-top:8px">
+        <div class="calc-grid">
+          <button class="calc-btn op" onclick="calcDigit('A')">A</button>
+          <button class="calc-btn op" onclick="calcDigit('B')">B</button>
+          <button class="calc-btn op" onclick="calcDigit('C')">C</button>
+          <button class="calc-btn op" onclick="calcDigit('D')">D</button>
+          <button class="calc-btn op" onclick="calcDigit('E')">E</button>
+          <button class="calc-btn op" onclick="calcDigit('F')">F</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Converter + result -->
+    <div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Number Converter</div>
+        <div style="margin-bottom:14px">
+          <label>Input Value</label>
+          <input class="input" id="conv-input" oninput="convertAll()" placeholder="Enter number...">
+        </div>
+        <div style="margin-bottom:14px">
+          <label>From Base</label>
+          <select class="select" id="conv-from" onchange="convertAll()">
+            <option value="10">Decimal</option>
+            <option value="2">Binary</option>
+            <option value="16">Hexadecimal</option>
+            <option value="8">Octal</option>
+          </select>
+        </div>
+        <div class="conv-label">Decimal</div>
+        <div class="conv-result" id="conv-dec">—</div>
+        <div class="conv-label" style="margin-top:10px">Binary</div>
+        <div class="conv-result" id="conv-bin">—</div>
+        <div class="conv-label" style="margin-top:10px">Hexadecimal</div>
+        <div class="conv-result" id="conv-hex">—</div>
+        <div class="conv-label" style="margin-top:10px">Octal</div>
+        <div class="conv-result" id="conv-oct">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Operation Result</div>
+        <div id="calc-result-area" style="font-family:var(--mono);font-size:13px;color:var(--muted)">
+          Perform an operation to see results here.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: GATES ══════════════════════ -->
+<div class="page" id="page-gates">
+  <div class="page-header">
+    <div class="page-tag">// tool_02</div>
+    <div class="page-title">Logic Gates</div>
+    <div class="page-desc">Click inputs to toggle them and observe the output. All gates drawn to IEEE standard.</div>
+  </div>
+
+  <div class="grid3">
+    <!-- Each gate will be rendered by JS -->
+    <div id="gate-and"></div>
+    <div id="gate-or"></div>
+    <div id="gate-not"></div>
+    <div id="gate-nand"></div>
+    <div id="gate-nor"></div>
+    <div id="gate-xor"></div>
+    <div id="gate-xnor"></div>
+    <div id="gate-buffer"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: TRUTH TABLES ══════════════════════ -->
+<div class="page" id="page-truth">
+  <div class="page-header">
+    <div class="page-tag">// tool_03</div>
+    <div class="page-title">Truth Tables</div>
+    <div class="page-desc">Enter a boolean expression to generate its complete truth table. Use A, B, C as variables.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Expression Input</div>
+    <div style="display:flex;gap:12px;align-items:flex-end">
+      <div style="flex:1">
+        <label>Boolean Expression</label>
+        <input class="input" id="truth-expr" placeholder="e.g. A AND B OR NOT C" value="A AND B OR NOT C">
+      </div>
+      <button class="btn btn-primary" onclick="generateTruth()">Generate</button>
+    </div>
+    <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted)">
+      Operators: AND, OR, NOT, NAND, NOR, XOR, XNOR &nbsp;|&nbsp; Variables: A, B, C
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Truth Table Output</div>
+    <div id="truth-output"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: BOOLEAN ALGEBRA ══════════════════════ -->
+<div class="page" id="page-boolean">
+  <div class="page-header">
+    <div class="page-tag">// tool_04</div>
+    <div class="page-title">Boolean Algebra</div>
+    <div class="page-desc">Simplify boolean expressions and explore the laws of boolean algebra.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Expression Simplifier</div>
+      <div style="margin-bottom:14px">
+        <label>Input Expression</label>
+        <input class="input" id="bool-input" placeholder="e.g. A AND (A OR B)" value="A AND (A OR B)">
+      </div>
+      <button class="btn btn-primary" onclick="simplifyBool()" style="margin-bottom:16px">Simplify</button>
+      <div id="bool-steps"></div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Laws Reference</div>
+        <div id="bool-laws"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: KMAP ══════════════════════ -->
+<div class="page" id="page-kmap">
+  <div class="page-header">
+    <div class="page-tag">// tool_05</div>
+    <div class="page-title">Karnaugh Map</div>
+    <div class="page-desc">Click cells to toggle 0/1. The minimised SOP expression is computed automatically.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">K-Map Grid</div>
+      <div style="margin-bottom:14px">
+        <label>Variables</label>
+        <select class="select" id="kmap-vars" onchange="initKmap()" style="width:auto">
+          <option value="2">2 Variables (A, B)</option>
+          <option value="3">3 Variables (A, B, C)</option>
+          <option value="4" selected>4 Variables (A, B, C, D)</option>
+        </select>
+      </div>
+      <div id="kmap-table" style="overflow-x:auto"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-secondary" onclick="kmapFill(0)">Fill 0</button>
+        <button class="btn btn-secondary" onclick="kmapFill(1)">Fill 1</button>
+        <button class="btn btn-secondary" onclick="kmapRandom()">Random</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Minimised Expression</div>
+      <div id="kmap-result" style="font-family:var(--mono);font-size:18px;color:var(--accent);padding:16px;background:var(--bg);border-radius:var(--radius);min-height:60px;margin-bottom:16px">—</div>
+      <div class="card-title">Minterms</div>
+      <div id="kmap-minterms" style="font-family:var(--mono);font-size:13px;color:var(--muted)">—</div>
+      <div style="margin-top:16px" class="card-title">Groups Found</div>
+      <div id="kmap-groups" style="font-family:var(--mono);font-size:12px;color:var(--accent2)">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: CIRCUIT BUILDER ══════════════════════ -->
+<div class="page" id="page-circuit">
+  <div class="page-header">
+    <div class="page-tag">// tool_06</div>
+    <div class="page-title">Circuit Builder</div>
+    <div class="page-desc">Place inputs and gates, then wire them. Click output port → input port to connect. Ctrl+Z to undo.</div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-right:4px">Place:</div>
+      <button class="palette-btn" id="pb-INPUT" onclick="selectTool('INPUT',this)">INPUT</button>
+      <button class="palette-btn active" id="pb-AND" onclick="selectTool('AND',this)">AND</button>
+      <button class="palette-btn" id="pb-OR" onclick="selectTool('OR',this)">OR</button>
+      <button class="palette-btn" id="pb-NOT" onclick="selectTool('NOT',this)">NOT</button>
+      <button class="palette-btn" id="pb-NAND" onclick="selectTool('NAND',this)">NAND</button>
+      <button class="palette-btn" id="pb-NOR" onclick="selectTool('NOR',this)">NOR</button>
+      <button class="palette-btn" id="pb-XOR" onclick="selectTool('XOR',this)">XOR</button>
+      <button class="palette-btn" id="pb-XNOR" onclick="selectTool('XNOR',this)">XNOR</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:8px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">INPUTS</span>
+        <button onclick="cbChangeInputs(-1)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px;line-height:1">−</button>
+        <span id="cb-input-count" style="font-family:var(--mono);font-size:13px;color:var(--accent2);min-width:16px;text-align:center">2</span>
+        <button onclick="cbChangeInputs(1)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px;line-height:1">+</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="palette-btn" style="color:var(--accent2);border-color:rgba(0,204,255,0.3)" onclick="cbFinish()">▶ Evaluate</button>
+      <button class="palette-btn" style="color:var(--accent3);border-color:rgba(255,107,53,0.3)" onclick="cbUndo()" title="Ctrl+Z">↩ Undo</button>
+      <button class="palette-btn" style="color:var(--danger);border-color:rgba(255,68,102,0.3)" onclick="cbClear()">Clear</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px">
+      <b style="color:var(--accent)">Place:</b> click canvas &nbsp;|&nbsp;
+      <b style="color:var(--accent2)">Connect:</b> click output ● then input ● &nbsp;|&nbsp;
+      <b style="color:var(--accent3)">Toggle INPUT:</b> click node &nbsp;|&nbsp;
+      <b style="color:var(--muted)">Delete:</b> right-click &nbsp;|&nbsp;
+      <b style="color:var(--purple)">Undo:</b> Ctrl+Z &nbsp;|&nbsp;
+      <b style="color:var(--muted)">Multi-input gates:</b> use INPUTS ± to set port count before placing
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div style="flex:1;min-width:0">
+      <div class="gate-canvas-wrap">
+        <canvas id="circuit-canvas" width="820" height="520" style="cursor:crosshair"></canvas>
+      </div>
+    </div>
+    <div style="width:220px;flex-shrink:0">
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title">Expression</div>
+        <div id="cb-expr" style="font-family:var(--mono);font-size:13px;color:var(--accent);padding:10px;background:var(--bg);border-radius:6px;min-height:48px;word-break:break-all">—</div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title">Output Value</div>
+        <div id="cb-output" style="font-family:var(--mono);font-size:36px;font-weight:700;color:var(--accent);text-align:center;padding:12px">—</div>
+      </div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title">Nodes</div>
+        <div id="cb-nodes" style="font-family:var(--mono);font-size:11px;color:var(--muted)">None placed</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Undo Stack</div>
+        <div id="cb-undo-info" style="font-family:var(--mono);font-size:11px;color:var(--muted)">0 actions</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: MULTIPLEXERS ══════════════════════ -->
+<div class="page" id="page-mux">
+  <div class="page-header">
+    <div class="page-tag">// component_01</div>
+    <div class="page-title">Multiplexers</div>
+    <div class="page-desc">Interactive MUX/DEMUX simulators. Toggle inputs and select lines. Generate MUX implementation from a boolean function F.</div>
+  </div>
+
+  <!-- F → MUX Solver -->
+  <div class="card" style="margin-bottom:20px;border-color:rgba(0,204,255,0.3)">
+    <div class="card-title">F → MUX Solver</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">
+      Enter a boolean function as a minterm list. The solver maps it to the smallest MUX and derives the data input expressions.
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:200px">
+        <label>Variables (e.g. A,B,C)</label>
+        <input class="input" id="mux-solver-vars" value="A,B,C" placeholder="A,B,C">
+      </div>
+      <div style="flex:2;min-width:200px">
+        <label>Minterms — Σm(...) e.g. 1,3,5,7</label>
+        <input class="input" id="mux-solver-minterms" value="1,3,5,7" placeholder="0,1,3,5">
+      </div>
+      <button class="btn btn-primary" onclick="solveMux()">Solve →</button>
+    </div>
+    <div id="mux-solver-result"></div>
+    <div style="margin-top:16px" id="mux-solver-fig"></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:20px">
+    <!-- 2:1 MUX -->
+    <div class="card">
+      <div class="card-title">2:1 Multiplexer</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">Y = S̄·I₀ + S·I₁</div>
+      <div id="mux21-fig" style="margin-bottom:12px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₀</div><button class="calc-btn" id="mux21-i0" onclick="mux21Toggle('i0')" style="padding:12px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₁</div><button class="calc-btn" id="mux21-i1" onclick="mux21Toggle('i1')" style="padding:12px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S</div><button class="calc-btn" id="mux21-s" onclick="mux21Toggle('s')" style="padding:12px;color:var(--accent2)">0</button></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">Y =</span>
+        <span id="mux21-out" style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent)">0</span>
+      </div>
+    </div>
+    <!-- 4:1 MUX -->
+    <div class="card">
+      <div class="card-title">4:1 Multiplexer</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:10px">Y = I_{S₁S₀}</div>
+      <div id="mux41-fig" style="margin-bottom:10px"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₀</div><button class="calc-btn" id="mux41-i0" onclick="mux41Toggle('i0')" style="padding:10px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₁</div><button class="calc-btn" id="mux41-i1" onclick="mux41Toggle('i1')" style="padding:10px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₂</div><button class="calc-btn" id="mux41-i2" onclick="mux41Toggle('i2')" style="padding:10px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₃</div><button class="calc-btn" id="mux41-i3" onclick="mux41Toggle('i3')" style="padding:10px">0</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S₀</div><button class="calc-btn" id="mux41-s0" onclick="mux41Toggle('s0')" style="padding:10px;color:var(--accent2)">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S₁</div><button class="calc-btn" id="mux41-s1" onclick="mux41Toggle('s1')" style="padding:10px;color:var(--accent2)">0</button></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">I<span id="mux41-sel">0</span> → Y =</span>
+        <span id="mux41-out" style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent)">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 16:1 MUX -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">16:1 Multiplexer</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">4-bit select S₃S₂S₁S₀ chooses one of 16 data inputs I₀–I₁₅</div>
+    <div id="mux16-fig" style="margin-bottom:14px"></div>
+    <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:12px" id="mux16-inputs"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px" id="mux16-selects"></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">S = <span id="mux16-sel-val">0000</span> → I<span id="mux16-sel">0</span> → Y =</span>
+      <span id="mux16-out" style="font-family:var(--mono);font-size:28px;font-weight:700;color:var(--accent)">0</span>
+    </div>
+  </div>
+
+  <!-- DEMUX -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">1:4 Demultiplexer</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">Routes input D to output Y_{S₁S₀}</div>
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:12px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">D</div><button class="calc-btn" id="dmx-d" onclick="dmxToggle('d')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S₀</div><button class="calc-btn" id="dmx-s0" onclick="dmxToggle('s0')" style="padding:12px;width:60px;color:var(--accent2)">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S₁</div><button class="calc-btn" id="dmx-s1" onclick="dmxToggle('s1')" style="padding:12px;width:60px;color:var(--accent2)">0</button></div>
+      </div>
+      <div style="font-size:24px;color:var(--border2)">→</div>
+      <div style="display:flex;gap:10px">
+        <div id="dmx-y0" style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₀</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--muted);padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">0</div></div>
+        <div id="dmx-y1" style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₁</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--muted);padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">0</div></div>
+        <div id="dmx-y2" style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₂</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--muted);padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">0</div></div>
+        <div id="dmx-y3" style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₃</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--muted);padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px">0</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: DECODERS ══════════════════════ -->
+<div class="page" id="page-decoder">
+  <div class="page-header">
+    <div class="page-tag">// component_02</div>
+    <div class="page-title">Decoders & Encoders</div>
+    <div class="page-desc">Interactive decoders + F→Decoder solver. Enter a boolean function to implement it using a decoder with OR gates.</div>
+  </div>
+
+  <!-- F → Decoder Solver -->
+  <div class="card" style="margin-bottom:20px;border-color:rgba(255,107,53,0.3)">
+    <div class="card-title">F → Decoder Implementation</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">
+      Any n-variable function can be implemented with a 2ⁿ-output decoder + OR gate. Enter your function to get the complete solution.
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+      <div style="flex:1;min-width:180px">
+        <label>Variables (e.g. A,B,C)</label>
+        <input class="input" id="dec-solver-vars" value="A,B,C" placeholder="A,B,C">
+      </div>
+      <div style="flex:2;min-width:200px">
+        <label>Minterms Σm(…)</label>
+        <input class="input" id="dec-solver-minterms" value="0,2,4,6" placeholder="0,1,3,5">
+      </div>
+      <button class="btn btn-primary" onclick="solveDecoder()">Solve →</button>
+    </div>
+    <div id="dec-solver-result"></div>
+    <div style="margin-top:16px" id="dec-solver-fig"></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:20px">
+    <!-- 2:4 decoder -->
+    <div class="card">
+      <div class="card-title">2:4 Line Decoder</div>
+      <div id="dec24-fig" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:10px;margin-bottom:14px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">A₀</div><button class="calc-btn" id="dec24-a0" onclick="dec24Toggle('a0')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">A₁</div><button class="calc-btn" id="dec24-a1" onclick="dec24Toggle('a1')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">EN</div><button class="calc-btn" id="dec24-en" onclick="dec24Toggle('en')" style="padding:12px;width:60px;color:var(--accent3)">1</button></div>
+      </div>
+      <div style="font-size:18px;color:var(--border2);margin-bottom:10px">↓</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="dec24-outputs"></div>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted)" id="dec24-active"></div>
+    </div>
+    <!-- 3:8 decoder -->
+    <div class="card">
+      <div class="card-title">3:8 Line Decoder</div>
+      <div id="dec38-fig" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">A₀</div><button class="calc-btn" id="dec38-a0" onclick="dec38Toggle('a0')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">A₁</div><button class="calc-btn" id="dec38-a1" onclick="dec38Toggle('a1')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">A₂</div><button class="calc-btn" id="dec38-a2" onclick="dec38Toggle('a2')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">EN</div><button class="calc-btn" id="dec38-en" onclick="dec38Toggle('en')" style="padding:10px;width:52px;color:var(--accent3)">1</button></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="dec38-outputs"></div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--muted)" id="dec38-active"></div>
+    </div>
+  </div>
+
+  <!-- Priority Encoder -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">4:2 Priority Encoder</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">Encodes highest-priority active input (I₃ = highest priority).</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:8px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₀</div><button class="calc-btn" id="enc-i0" onclick="encToggle('i0')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₁</div><button class="calc-btn" id="enc-i1" onclick="encToggle('i1')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₂</div><button class="calc-btn" id="enc-i2" onclick="encToggle('i2')" style="padding:10px;width:52px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I₃ ↑</div><button class="calc-btn" id="enc-i3" onclick="encToggle('i3')" style="padding:10px;width:52px">0</button></div>
+      </div>
+      <div style="font-size:20px;color:var(--border2)">→</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₁</div><div id="enc-y1" style="font-family:var(--mono);font-size:22px;font-weight:700;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y₀</div><div id="enc-y0" style="font-family:var(--mono);font-size:22px;font-weight:700;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Valid</div><div id="enc-v" style="font-family:var(--mono);font-size:22px;font-weight:700;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">0</div></div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--accent2)" id="enc-msg">No input</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decoder truth table -->
+  <div class="card">
+    <div class="card-title">2:4 Decoder Truth Table</div>
+    <table>
+      <thead><tr><th>A₁</th><th>A₀</th><th>Y₀</th><th>Y₁</th><th>Y₂</th><th>Y₃</th></tr></thead>
+      <tbody>
+        <tr><td class="zero">0</td><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td></tr>
+        <tr><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="zero">0</td></tr>
+        <tr><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="one">1</td><td class="zero">0</td></tr>
+        <tr><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="one">1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════ PAGE: SEQUENTIAL CIRCUITS ══════════════════════ -->
+<div class="page" id="page-sequential">
+  <div class="page-header">
+    <div class="page-tag">// component_03</div>
+    <div class="page-title">Sequential Circuits</div>
+    <div class="page-desc">Flip-flops, registers and counters. Clock-driven state machines. Click CLK to trigger a rising edge.</div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:20px">
+    <!-- SR Flip-Flop -->
+    <div class="card">
+      <div class="card-title">SR Flip-Flop</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">Set-Reset latch. S=R=1 is invalid (undefined state).</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S</div><button class="calc-btn" id="sr-s" onclick="srToggle('s')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">R</div><button class="calc-btn" id="sr-r" onclick="srToggle('r')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">CLK ↑</div><button class="calc-btn" id="sr-clk" onclick="srClock()" style="padding:12px;width:60px;color:var(--accent3)">↑</button></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q</div><div id="sr-q" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--accent)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q̄</div><div id="sr-qb" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">1</div></div>
+        <div id="sr-state" style="font-family:var(--mono);font-size:12px;color:var(--accent2)">HOLD</div>
+      </div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:11px" id="sr-history"></div>
+    </div>
+
+    <!-- D Flip-Flop -->
+    <div class="card">
+      <div class="card-title">D Flip-Flop</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">Q captures D on rising clock edge. Q(next) = D</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">D</div><button class="calc-btn" id="df-d" onclick="dfToggle()" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">CLK ↑</div><button class="calc-btn" id="df-clk" onclick="dfClock()" style="padding:12px;width:60px;color:var(--accent3)">↑</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">RST</div><button class="calc-btn" onclick="dfReset()" style="padding:12px;width:60px;color:var(--danger)">RST</button></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q</div><div id="df-q" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--accent)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q̄</div><div id="df-qb" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">1</div></div>
+      </div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:11px" id="df-history"></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:20px">
+    <!-- JK Flip-Flop -->
+    <div class="card">
+      <div class="card-title">JK Flip-Flop</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">J=K=1 toggles Q. Resolves the undefined SR state.</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">J</div><button class="calc-btn" id="jk-j" onclick="jkToggle('j')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">K</div><button class="calc-btn" id="jk-k" onclick="jkToggle('k')" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">CLK ↑</div><button class="calc-btn" id="jk-clk" onclick="jkClock()" style="padding:12px;width:60px;color:var(--accent3)">↑</button></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q</div><div id="jk-q" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--accent)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q̄</div><div id="jk-qb" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">1</div></div>
+        <div id="jk-state" style="font-family:var(--mono);font-size:12px;color:var(--accent2)">HOLD</div>
+      </div>
+    </div>
+
+    <!-- T Flip-Flop -->
+    <div class="card">
+      <div class="card-title">T Flip-Flop (Toggle)</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">T=1 toggles Q on clock edge. Used in counters.</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">T</div><button class="calc-btn" id="tf-t" onclick="tfToggle()" style="padding:12px;width:60px">0</button></div>
+        <div><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">CLK ↑</div><button class="calc-btn" onclick="tfClock()" style="padding:12px;width:60px;color:var(--accent3)">↑</button></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q</div><div id="tf-q" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--accent)">0</div></div>
+        <div style="text-align:center"><div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Q̄</div><div id="tf-qb" style="font-family:var(--mono);font-size:32px;font-weight:700;padding:10px 18px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--muted)">1</div></div>
+        <div id="tf-count" style="font-family:var(--mono);font-size:12px;color:var(--accent2)">Clocks: 0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-bit counter -->
+  <div class="card">
+    <div class="card-title">4-bit Synchronous Counter</div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px">Counts 0–15 on each CLK pulse. Built from four T flip-flops.</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="calc-btn" onclick="counterClock()" style="padding:12px 20px;color:var(--accent3)">CLK ↑</button>
+      <button class="calc-btn" onclick="counterReset()" style="padding:12px 20px;color:var(--danger)">RESET</button>
+      <div style="display:flex;gap:8px;margin-left:12px" id="counter-bits"></div>
+      <div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent);margin-left:16px">= <span id="counter-dec">0</span></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);margin-left:8px">(0x<span id="counter-hex">0</span>)</div>
+    </div>
+  </div>
+</div>
+<div class="page" id="page-reference">
+  <div class="page-header">
+    <div class="page-tag">// tool_07</div>
+    <div class="page-title">Reference Sheet</div>
+    <div class="page-desc">Complete quick-reference for digital logic design fundamentals.</div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="ref-card">
+        <div class="ref-title">⊕ Boolean Laws</div>
+        <div class="ref-formula">Identity:     A+0=A,   A·1=A</div>
+        <div class="ref-formula">Null:         A+1=1,   A·0=0</div>
+        <div class="ref-formula">Idempotent:   A+A=A,   A·A=A</div>
+        <div class="ref-formula">Complement:   A+¬A=1,  A·¬A=0</div>
+        <div class="ref-formula">Double Neg:   ¬(¬A) = A</div>
+        <div class="ref-formula">Commutative:  A+B=B+A, A·B=B·A</div>
+        <div class="ref-formula">Associative:  (A+B)+C=A+(B+C)</div>
+        <div class="ref-formula">Distributive: A·(B+C)=A·B+A·C</div>
+        <div class="ref-formula">Absorption:   A+A·B=A, A·(A+B)=A</div>
+        <div class="ref-formula">De Morgan:    ¬(A·B)=¬A+¬B</div>
+        <div class="ref-formula">De Morgan:    ¬(A+B)=¬A·¬B</div>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-title">⊞ Gate Truth Summary</div>
+        <table>
+          <thead><tr><th>A</th><th>B</th><th>AND</th><th>OR</th><th>NAND</th><th>NOR</th><th>XOR</th></tr></thead>
+          <tbody>
+            <tr><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="zero">0</td></tr>
+            <tr><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td></tr>
+            <tr><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td></tr>
+            <tr><td class="one">1</td><td class="one">1</td><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="zero">0</td><td class="zero">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="ref-card">
+        <div class="ref-title">◈ Number Systems</div>
+        <div class="ref-formula">Binary (Base 2):   0,1</div>
+        <div class="ref-formula">Octal (Base 8):    0–7</div>
+        <div class="ref-formula">Decimal (Base 10): 0–9</div>
+        <div class="ref-formula">Hex (Base 16):     0–9, A–F</div>
+        <div style="margin-top:10px" class="ref-formula">Dec→Bin: Divide by 2, read remainders upward</div>
+        <div class="ref-formula">Bin→Dec: Σ bit × 2^position</div>
+        <div class="ref-formula">Bin→Hex: Group 4 bits from right</div>
+        <div class="ref-formula">Hex→Bin: Expand each digit to 4 bits</div>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-title">◉ Flip-Flop Truth Tables</div>
+        <div style="margin-bottom:8px;font-size:12px;color:var(--muted);font-family:var(--mono)">SR Flip-Flop</div>
+        <table>
+          <thead><tr><th>S</th><th>R</th><th>Q(next)</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td class="zero">0</td><td class="zero">0</td><td>Q</td><td style="color:var(--muted)">Hold</td></tr>
+            <tr><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td style="color:var(--muted)">Reset</td></tr>
+            <tr><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td style="color:var(--muted)">Set</td></tr>
+            <tr><td class="one">1</td><td class="one">1</td><td style="color:var(--danger)">X</td><td style="color:var(--danger)">Invalid</td></tr>
+          </tbody>
+        </table>
+        <div style="margin:10px 0 8px;font-size:12px;color:var(--muted);font-family:var(--mono)">D Flip-Flop</div>
+        <table>
+          <thead><tr><th>D</th><th>CLK</th><th>Q(next)</th></tr></thead>
+          <tbody>
+            <tr><td class="zero">0</td><td>↑</td><td class="zero">0</td></tr>
+            <tr><td class="one">1</td><td>↑</td><td class="one">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-title">⚡ Conversion Examples</div>
+        <div class="ref-formula">42₁₀ = 101010₂ = 2A₁₆ = 52₈</div>
+        <div class="ref-formula">255₁₀ = 11111111₂ = FF₁₆</div>
+        <div class="ref-formula">1010₂ = 10₁₀ = A₁₆</div>
+        <div class="ref-formula">0xDE = 11011110₂ = 222₁₀</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+  if (name === 'gates')   initGates();
+  if (name === 'truth')   generateTruth();
+  if (name === 'boolean') initBoolLaws();
+  if (name === 'kmap')    initKmap();
+  if (name === 'circuit') initCircuit();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ══════════════════════════════════════════════════
+   CALCULATOR
+══════════════════════════════════════════════════ */
+let calcState = { val: 0, pending: null, op: null, base: 10, input: '' };
+
+function calcDisplay(v) {
+  const b = parseInt(document.getElementById('calc-base').value);
+  const s = v.toString(b).toUpperCase();
+  document.getElementById('calc-display').textContent = s || '0';
+  document.getElementById('calc-sub').textContent =
+    b !== 10 ? `= ${v} (dec)` : `BIN: ${v.toString(2)} | HEX: ${v.toString(16).toUpperCase()}`;
+}
+
+function calcBaseChange() {
+  const b = parseInt(document.getElementById('calc-base').value);
+  calcState.base = b;
+  calcState.input = '';
+  document.getElementById('hex-pad').style.display = b === 16 ? 'block' : 'none';
+  calcDisplay(calcState.val);
+}
+
+function calcDigit(d) {
+  const b = calcState.base;
+  const allowed = b === 2 ? '01' : b === 8 ? '01234567' : b === 16 ? '0123456789ABCDEFabcdef' : '0123456789';
+  if (!allowed.includes(d.toUpperCase())) { toast('Invalid digit for base ' + b); return; }
+  calcState.input += d.toUpperCase();
+  calcState.val = parseInt(calcState.input, b) || 0;
+  calcDisplay(calcState.val);
+}
+
+function calcClear() { calcState = { val: 0, pending: null, op: null, base: calcState.base, input: '' }; calcDisplay(0); document.getElementById('calc-result-area').innerHTML = '<span style="color:var(--muted)">Cleared.</span>'; }
+function calcDel() { calcState.input = calcState.input.slice(0, -1); calcState.val = parseInt(calcState.input, calcState.base) || 0; calcDisplay(calcState.val); }
+
+function calcOp(op) {
+  if (op === 'NOT') {
+    const r = (~calcState.val) & 0xFFFF;
+    showCalcResult(calcState.val, null, op, r);
+    calcState.val = r; calcState.input = ''; calcDisplay(r); return;
+  }
+  if (op === 'SHL') { const r = (calcState.val << 1) & 0xFFFF; showCalcResult(calcState.val, null, op, r); calcState.val = r; calcState.input = ''; calcDisplay(r); return; }
+  if (op === 'SHR') { const r = (calcState.val >> 1) & 0xFFFF; showCalcResult(calcState.val, null, op, r); calcState.val = r; calcState.input = ''; calcDisplay(r); return; }
+  calcState.pending = calcState.val;
+  calcState.op = op;
+  calcState.input = '';
+  document.getElementById('calc-sub').textContent = calcState.pending.toString(calcState.base).toUpperCase() + ' ' + op + ' ...';
+}
+
+function calcEnter() { calcOp(calcState.op || 'AND'); }
+
+function calcEval() {
+  if (!calcState.op || calcState.pending === null) return;
+  const a = calcState.pending, b = calcState.val, op = calcState.op;
+  let r;
+  switch(op) {
+    case 'AND':  r = (a & b) & 0xFFFF; break;
+    case 'OR':   r = (a | b) & 0xFFFF; break;
+    case 'XOR':  r = (a ^ b) & 0xFFFF; break;
+    case 'NAND': r = (~(a & b)) & 0xFFFF; break;
+    case 'NOR':  r = (~(a | b)) & 0xFFFF; break;
+    case 'XNOR': r = (~(a ^ b)) & 0xFFFF; break;
+    default: r = b;
+  }
+  showCalcResult(a, b, op, r);
+  calcState.val = r; calcState.pending = null; calcState.op = null; calcState.input = '';
+  calcDisplay(r);
+}
+
+function showCalcResult(a, b, op, r) {
+  const b10 = calcState.base;
+  const fmt = v => v.toString(b10).toUpperCase();
+  const bin = v => v.toString(2).padStart(16,'0');
+  document.getElementById('calc-result-area').innerHTML = `
+    <div style="margin-bottom:10px">
+      <div style="color:var(--muted);margin-bottom:4px;font-size:11px;letter-spacing:1px">${b !== null ? fmt(a) + ' ' + op + ' ' + fmt(b) : op + ' ' + fmt(a)}</div>
+      <div style="font-size:22px;color:var(--accent)">${fmt(r)}</div>
+    </div>
+    <div style="display:grid;gap:4px">
+      ${a !== null && b !== null ? `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">A</span><span>${bin(a)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">B</span><span>${bin(b)}</span>
+        </div>` : `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="color:var(--muted)">IN</span><span>${bin(a)}</span>
+        </div>`}
+      <div style="border-top:1px solid var(--border);padding-top:4px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--accent)">OUT</span><span style="color:var(--accent)">${bin(r)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function convertAll() {
+  const raw = document.getElementById('conv-input').value.trim();
+  const from = parseInt(document.getElementById('conv-from').value);
+  if (!raw) { ['dec','bin','hex','oct'].forEach(id => document.getElementById('conv-'+id).textContent = '—'); return; }
+  try {
+    const val = parseInt(raw, from);
+    if (isNaN(val)) throw new Error();
+    document.getElementById('conv-dec').textContent = val.toString(10);
+    document.getElementById('conv-bin').textContent = val.toString(2);
+    document.getElementById('conv-hex').textContent = val.toString(16).toUpperCase();
+    document.getElementById('conv-oct').textContent = val.toString(8);
+  } catch(e) {
+    ['dec','bin','hex','oct'].forEach(id => document.getElementById('conv-'+id).textContent = 'Invalid');
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   LOGIC GATES (SVG drawings)
+══════════════════════════════════════════════════ */
+const gateState = {};
+
+function initGates() {
+  const gates = [
+    { id: 'and',    label: 'AND Gate',    inputs: 2, fn: (a,b) => a & b },
+    { id: 'or',     label: 'OR Gate',     inputs: 2, fn: (a,b) => a | b },
+    { id: 'not',    label: 'NOT Gate',    inputs: 1, fn: (a) => a^1 },
+    { id: 'nand',   label: 'NAND Gate',   inputs: 2, fn: (a,b) => (a&b)^1 },
+    { id: 'nor',    label: 'NOR Gate',    inputs: 2, fn: (a,b) => (a|b)^1 },
+    { id: 'xor',    label: 'XOR Gate',    inputs: 2, fn: (a,b) => a^b },
+    { id: 'xnor',   label: 'XNOR Gate',   inputs: 2, fn: (a,b) => (a^b)^1 },
+    { id: 'buffer', label: 'Buffer',      inputs: 1, fn: (a) => a },
+  ];
+  gates.forEach(g => {
+    if (!gateState[g.id]) gateState[g.id] = { a: 0, b: 0 };
+    renderGate(g);
+  });
+}
+
+function renderGate(g) {
+  const st = gateState[g.id];
+  const a = st.a, b = st.b;
+  const out = g.inputs === 1 ? g.fn(a) : g.fn(a, b);
+  const clrHi = '#00FF88', clrLo = '#3A3A50', textClr = '#E8E8F0';
+  const wire = v => v ? clrHi : clrLo;
+
+  const container = document.getElementById('gate-' + g.id);
+  if (!container) return;
+
+  let gateShape = '';
+  const W = 260, H = 160;
+  const cx = 130, cy = 80;
+
+  if (g.id === 'and') {
+    gateShape = `<path d="M80,40 L80,120 L110,120 A40,40 0 0,0 110,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'or') {
+    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'not' || g.id === 'buffer') {
+    gateShape = `<path d="M80,40 L80,120 L150,80 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    if (g.id === 'not') gateShape += `<circle cx="155" cy="80" r="6" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'nand') {
+    gateShape = `<path d="M80,40 L80,120 L110,120 A40,40 0 0,0 110,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="157" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'nor') {
+    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="152" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'xor') {
+    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<path d="M72,40 Q87,80 72,120" fill="none" stroke="${textClr}" stroke-width="2"/>`;
+  } else if (g.id === 'xnor') {
+    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<path d="M72,40 Q87,80 72,120" fill="none" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="152" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+  }
+
+  // Wire lines
+  const outX = (g.id === 'nand' || g.id === 'nor' || g.id === 'xnor') ? 165 : (g.id === 'not') ? 162 : 150;
+  const inputsHtml = g.inputs === 2 ? `
+    <!-- Input A wire -->
+    <line x1="30" y1="60" x2="80" y2="60" stroke="${wire(a)}" stroke-width="2.5"/>
+    <!-- Input B wire -->
+    <line x1="30" y1="100" x2="80" y2="100" stroke="${wire(b)}" stroke-width="2.5"/>
+    <!-- Output wire -->
+    <line x1="${outX}" y1="80" x2="230" y2="80" stroke="${wire(out)}" stroke-width="2.5"/>
+    <!-- A toggle -->
+    <rect x="10" y="50" width="22" height="20" rx="4" fill="${a ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(a)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','a')"/>
+    <text x="21" y="64" fill="${wire(a)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${a}</text>
+    <!-- B toggle -->
+    <rect x="10" y="90" width="22" height="20" rx="4" fill="${b ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(b)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','b')"/>
+    <text x="21" y="104" fill="${wire(b)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${b}</text>
+  ` : `
+    <line x1="30" y1="80" x2="80" y2="80" stroke="${wire(a)}" stroke-width="2.5"/>
+    <line x1="${outX}" y1="80" x2="230" y2="80" stroke="${wire(out)}" stroke-width="2.5"/>
+    <rect x="10" y="70" width="22" height="20" rx="4" fill="${a ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(a)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','a')"/>
+    <text x="21" y="84" fill="${wire(a)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${a}</text>
+  `;
+
+  container.innerHTML = `
+    <div class="card" style="padding:16px">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:12px">${g.label}</div>
+      <div class="gate-canvas-wrap">
+        <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+          ${inputsHtml}
+          ${gateShape}
+          <!-- Output dot -->
+          <circle cx="228" cy="80" r="5" fill="${wire(out)}" stroke="${wire(out)}" stroke-width="1"/>
+          <!-- Output label -->
+          <text x="240" y="84" fill="${wire(out)}" font-family="monospace" font-size="13" font-weight="700">${out}</text>
+          ${g.inputs === 2 ? `
+          <text x="33" y="59" fill="${clrLo}" font-family="monospace" font-size="10">A</text>
+          <text x="33" y="99" fill="${clrLo}" font-family="monospace" font-size="10">B</text>
+          ` : `<text x="33" y="79" fill="${clrLo}" font-family="monospace" font-size="10">A</text>`}
+          <text x="207" y="74" fill="${clrLo}" font-family="monospace" font-size="10">Y</text>
+        </svg>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Click input boxes to toggle</div>
+    </div>
+  `;
+}
+
+function toggleInput(gid, inp) {
+  gateState[gid][inp] ^= 1;
+  const gates = [
+    { id: 'and', label: 'AND Gate', inputs: 2, fn: (a,b) => a&b },
+    { id: 'or', label: 'OR Gate', inputs: 2, fn: (a,b) => a|b },
+    { id: 'not', label: 'NOT Gate', inputs: 1, fn: a => a^1 },
+    { id: 'nand', label: 'NAND Gate', inputs: 2, fn: (a,b) => (a&b)^1 },
+    { id: 'nor', label: 'NOR Gate', inputs: 2, fn: (a,b) => (a|b)^1 },
+    { id: 'xor', label: 'XOR Gate', inputs: 2, fn: (a,b) => a^b },
+    { id: 'xnor', label: 'XNOR Gate', inputs: 2, fn: (a,b) => (a^b)^1 },
+    { id: 'buffer', label: 'Buffer', inputs: 1, fn: a => a },
+  ];
+  const g = gates.find(x => x.id === gid);
+  if (g) renderGate(g);
+}
+
+/* ══════════════════════════════════════════════════
+   TRUTH TABLES
+══════════════════════════════════════════════════ */
+function generateTruth() {
+  const expr = document.getElementById('truth-expr').value.trim().toUpperCase();
+  const vars = [];
+  if (expr.includes('A')) vars.push('A');
+  if (expr.includes('B')) vars.push('B');
+  if (expr.includes('C')) vars.push('C');
+  if (vars.length === 0) { document.getElementById('truth-output').innerHTML = '<span style="color:var(--danger)">No variables found. Use A, B, C.</span>'; return; }
+
+  const rows = Math.pow(2, vars.length);
+  let html = '<table><thead><tr>';
+  vars.forEach(v => html += `<th>${v}</th>`);
+  html += `<th style="color:var(--accent)">${expr}</th></tr></thead><tbody>`;
+
+  for (let i = rows - 1; i >= 0; i--) {
+    html += '<tr>';
+    const vals = {};
+    vars.forEach((v, idx) => {
+      const bit = (i >> (vars.length - 1 - idx)) & 1;
+      vals[v] = bit;
+      html += `<td class="${bit ? 'one' : 'zero'}">${bit}</td>`;
+    });
+    let out;
+    try { out = evalBool(expr, vals) ? 1 : 0; }
+    catch(e) { out = '?'; }
+    html += `<td class="${out === 1 ? 'one' : out === 0 ? 'zero' : ''}" style="font-weight:800">${out}</td>`;
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('truth-output').innerHTML = html;
+}
+
+function evalBool(expr, vals) {
+  let e = expr;
+  Object.keys(vals).forEach(v => { e = e.replace(new RegExp('\\b' + v + '\\b', 'g'), vals[v]); });
+  e = e.replace(/\bNOT\s+(\d)/g, '(1-$1)');
+  e = e.replace(/\bNAND\b/g, 'NAND');
+  e = e.replace(/\bNOR\b/g, 'NOR');
+  e = e.replace(/\bXNOR\b/g, 'XNOR');
+  e = e.replace(/(\d)\s+AND\s+(\d)/g, '($1&$2)');
+  e = e.replace(/(\d)\s+OR\s+(\d)/g, '($1|$2)');
+  e = e.replace(/(\d)\s+XOR\s+(\d)/g, '($1^$2)');
+  e = e.replace(/(\d)\s+NAND\s+(\d)/g, '(1-($1&$2))');
+  e = e.replace(/(\d)\s+NOR\s+(\d)/g, '(1-($1|$2))');
+  e = e.replace(/(\d)\s+XNOR\s+(\d)/g, '(1-($1^$2))');
+  // multiple passes for complex expressions
+  for (let i = 0; i < 5; i++) {
+    e = e.replace(/(\d)\s+AND\s+(\d)/g, '($1&$2)');
+    e = e.replace(/(\d)\s+OR\s+(\d)/g, '($1|$2)');
+    e = e.replace(/NOT\s+(\d)/g, '(1-$1)');
+  }
+  try { return Function('"use strict";return (' + e + ')')() ? 1 : 0; }
+  catch(e2) { return 0; }
+}
+
+/* ══════════════════════════════════════════════════
+   BOOLEAN ALGEBRA
+══════════════════════════════════════════════════ */
+const BOOL_LAWS = [
+  { name: 'Identity Law', formulas: ['A + 0 = A', 'A · 1 = A'] },
+  { name: 'Null Law', formulas: ['A + 1 = 1', 'A · 0 = 0'] },
+  { name: 'Idempotent Law', formulas: ['A + A = A', 'A · A = A'] },
+  { name: 'Complement Law', formulas: ['A + ¬A = 1', 'A · ¬A = 0'] },
+  { name: 'Double Negation', formulas: ['¬(¬A) = A'] },
+  { name: 'Commutative Law', formulas: ['A + B = B + A', 'A · B = B · A'] },
+  { name: 'Associative Law', formulas: ['(A+B)+C = A+(B+C)'] },
+  { name: 'Distributive Law', formulas: ['A·(B+C) = A·B + A·C'] },
+  { name: 'Absorption Law', formulas: ['A + A·B = A', 'A·(A+B) = A'] },
+  { name: "De Morgan's Law", formulas: ['¬(A·B) = ¬A+¬B', '¬(A+B) = ¬A·¬B'] },
+];
+
+function initBoolLaws() {
+  const el = document.getElementById('bool-laws');
+  if (el.children.length > 0) return;
+  el.innerHTML = BOOL_LAWS.map(l => `
+    <div class="bool-step">
+      <div class="step-num">${BOOL_LAWS.indexOf(l)+1}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">${l.name}</div>
+        ${l.formulas.map(f => `<div class="ref-formula" style="margin:3px 0">${f}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function simplifyBool() {
+  const expr = document.getElementById('bool-input').value.trim().toUpperCase();
+  const steps = [];
+  let current = expr;
+
+  steps.push({ expr: current, law: 'Original expression' });
+
+  // Apply known simplification patterns
+  const rules = [
+    { from: /A AND \(A OR B\)/g, to: 'A', law: 'Absorption: A·(A+B) = A' },
+    { from: /A OR A AND B/g, to: 'A', law: 'Absorption: A+A·B = A' },
+    { from: /A AND A/g, to: 'A', law: 'Idempotent: A·A = A' },
+    { from: /A OR A/g, to: 'A', law: 'Idempotent: A+A = A' },
+    { from: /A AND 0/g, to: '0', law: 'Null: A·0 = 0' },
+    { from: /A OR 1/g, to: '1', law: 'Null: A+1 = 1' },
+    { from: /A AND 1/g, to: 'A', law: 'Identity: A·1 = A' },
+    { from: /A OR 0/g, to: 'A', law: 'Identity: A+0 = A' },
+    { from: /NOT \(NOT A\)/g, to: 'A', law: 'Double Negation: ¬(¬A) = A' },
+  ];
+
+  rules.forEach(r => {
+    const next = current.replace(r.from, r.to);
+    if (next !== current) { steps.push({ expr: next, law: r.law }); current = next; }
+  });
+
+  if (steps.length === 1) steps.push({ expr: current, law: 'No further simplification found' });
+
+  document.getElementById('bool-steps').innerHTML = steps.map((s, i) => `
+    <div class="bool-step">
+      <div class="step-num">${i + 1}</div>
+      <div>
+        <div class="step-expr">${s.expr}</div>
+        <div class="step-law">${s.law}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   KARNAUGH MAP
+══════════════════════════════════════════════════ */
+let kmapData = {};
+let kmapVars = 4;
+
+function initKmap() {
+  kmapVars = parseInt(document.getElementById('kmap-vars').value);
+  const cells = Math.pow(2, kmapVars);
+  for (let i = 0; i < cells; i++) kmapData[i] = kmapData[i] !== undefined ? kmapData[i] : 0;
+  renderKmap();
+}
+
+function renderKmap() {
+  const el = document.getElementById('kmap-table');
+  if (kmapVars === 2) {
+    // 2x2
+    const gray = [0,1,3,2];
+    let html = '<table class="kmap-table"><thead><tr><th>A\\B</th><th>B=0</th><th>B=1</th></tr></thead><tbody>';
+    for (let a = 0; a < 2; a++) {
+      html += `<tr><th>A=${a}</th>`;
+      for (let b = 0; b < 2; b++) {
+        const idx = a*2 + b;
+        const v = kmapData[idx] || 0;
+        html += `<td class="kmap-${v}" onclick="toggleKmap(${idx})">${v}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } else if (kmapVars === 3) {
+    const gray2 = [0,1,3,2];
+    let html = '<table class="kmap-table"><thead><tr><th>A\\BC</th><th>00</th><th>01</th><th>11</th><th>10</th></tr></thead><tbody>';
+    for (let a = 0; a < 2; a++) {
+      html += `<tr><th>A=${a}</th>`;
+      gray2.forEach(bc => {
+        const idx = a*4 + bc;
+        const v = kmapData[idx] || 0;
+        html += `<td class="kmap-${v}" onclick="toggleKmap(${idx})">${v}</td>`;
+      });
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  } else {
+    const gray2 = [0,1,3,2];
+    let html = '<table class="kmap-table"><thead><tr><th>AB\\CD</th><th>00</th><th>01</th><th>11</th><th>10</th></tr></thead><tbody>';
+    gray2.forEach(ab => {
+      const abStr = ab.toString(2).padStart(2,'0');
+      html += `<tr><th>${abStr}</th>`;
+      gray2.forEach(cd => {
+        const idx = ab*4 + cd;
+        const v = kmapData[idx] || 0;
+        html += `<td class="kmap-${v}" onclick="toggleKmap(${idx})">${v}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  }
+  updateKmapResult();
+}
+
+function toggleKmap(idx) {
+  kmapData[idx] = (kmapData[idx] || 0) ^ 1;
+  renderKmap();
+}
+function kmapFill(v) { const cells = Math.pow(2, kmapVars); for (let i = 0; i < cells; i++) kmapData[i] = v; renderKmap(); }
+function kmapRandom() { const cells = Math.pow(2, kmapVars); for (let i = 0; i < cells; i++) kmapData[i] = Math.random() > 0.5 ? 1 : 0; renderKmap(); }
+
+function updateKmapResult() {
+  const minterms = [];
+  const cells = Math.pow(2, kmapVars);
+  for (let i = 0; i < cells; i++) { if (kmapData[i] === 1) minterms.push(i); }
+  document.getElementById('kmap-minterms').textContent = minterms.length ? 'Σm(' + minterms.join(', ') + ')' : 'None';
+
+  if (minterms.length === 0) { document.getElementById('kmap-result').textContent = 'F = 0'; document.getElementById('kmap-groups').textContent = '—'; return; }
+  if (minterms.length === cells) { document.getElementById('kmap-result').textContent = 'F = 1'; document.getElementById('kmap-groups').textContent = 'All ones group'; return; }
+
+  // Simple SOP: one term per minterm
+  const vars4 = ['A','B','C','D'];
+  const vars = vars4.slice(0, kmapVars);
+  const terms = minterms.map(m => {
+    const bits = m.toString(2).padStart(kmapVars,'0');
+    return bits.split('').map((b,i) => b==='0' ? '¬'+vars[i] : vars[i]).join('·');
+  });
+  document.getElementById('kmap-result').textContent = 'F = ' + terms.join(' + ');
+  document.getElementById('kmap-groups').textContent = minterms.length + ' minterm(s) identified';
+}
+
+/* ══════════════════════════════════════════════════
+   CIRCUIT BUILDER — Full version with connections, undo, variable inputs
+══════════════════════════════════════════════════ */
+let cbNodes = [];
+let cbWires = [];
+let cbTool = 'AND';
+let cbNextId = 0;
+let cbPending = null;
+let cbCanvas, cbCtx;
+let cbHistory = [];   // undo stack — each entry is {nodes, wires} deep copy
+let cbInputCount = 2; // configurable gate input count
+
+const CB_W = 64, CB_H = 44;
+const INPUT_R = 18;
+
+function cbSaveHistory() {
+  cbHistory.push({ nodes: JSON.parse(JSON.stringify(cbNodes)), wires: JSON.parse(JSON.stringify(cbWires)) });
+  if (cbHistory.length > 50) cbHistory.shift();
+  const el = document.getElementById('cb-undo-info');
+  if (el) el.textContent = cbHistory.length + ' action' + (cbHistory.length !== 1 ? 's' : '');
+}
+
+function cbUndo() {
+  if (cbHistory.length === 0) { toast('Nothing to undo'); return; }
+  const prev = cbHistory.pop();
+  cbNodes = prev.nodes; cbWires = prev.wires; cbPending = null;
+  const el = document.getElementById('cb-undo-info');
+  if (el) el.textContent = cbHistory.length + ' action' + (cbHistory.length !== 1 ? 's' : '');
+  cbEval(); drawCB();
+}
+
+function cbChangeInputs(delta) {
+  cbInputCount = Math.max(2, Math.min(8, cbInputCount + delta));
+  const el = document.getElementById('cb-input-count');
+  if (el) el.textContent = cbInputCount;
+}
+
+function selectTool(t, btn) {
+  cbTool = t;
+  document.querySelectorAll('.palette-btn[id^="pb-"]').forEach(b => b.classList.remove('active'));
+  const pb = document.getElementById('pb-' + t);
+  if (pb) pb.classList.add('active');
+}
+
+function cbClear() {
+  cbSaveHistory();
+  cbNodes = []; cbWires = []; cbNextId = 0; cbPending = null;
+  document.getElementById('cb-expr').textContent = '—';
+  document.getElementById('cb-output').textContent = '—';
+  drawCB();
+}
+
+function initCircuit() {
+  cbCanvas = document.getElementById('circuit-canvas');
+  cbCtx = cbCanvas.getContext('2d');
+  cbCanvas.addEventListener('click', cbHandleClick);
+  cbCanvas.addEventListener('contextmenu', e => { e.preventDefault(); cbHandleRight(e); });
+  cbCanvas.addEventListener('mousemove', cbHandleMove);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); cbUndo(); }
+  });
+  drawCB();
+}
+
+let cbMouse = {x:0,y:0};
+function cbHandleMove(e) {
+  const r = cbCanvas.getBoundingClientRect();
+  cbMouse = {x: e.clientX - r.left, y: e.clientY - r.top};
+  if (cbPending) drawCB();
+}
+
+function cbHandleRight(e) {
+  const r = cbCanvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const idx = cbNodes.findIndex(n => Math.hypot(n.x - mx, n.y - my) < 36);
+  if (idx >= 0) {
+    cbSaveHistory();
+    const id = cbNodes[idx].id;
+    cbNodes.splice(idx, 1);
+    cbWires = cbWires.filter(w => w.from.nodeId !== id && w.to.nodeId !== id);
+    cbPending = null;
+    cbEval(); drawCB();
+  }
+}
+
+function cbHandleClick(e) {
+  const r = cbCanvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+
+  for (const n of cbNodes) {
+    const op = cbOutPort(n);
+    if (Math.hypot(op.x - mx, op.y - my) < 12) {
+      if (cbPending && !cbPending.isOutput) {
+        cbSaveHistory();
+        cbWires.push({ from: {nodeId: n.id, port: 'out'}, to: {nodeId: cbPending.nodeId, port: cbPending.port} });
+        cbPending = null; cbEval(); drawCB(); return;
+      }
+      cbPending = {nodeId: n.id, port: 'out', isOutput: true};
+      drawCB(); return;
+    }
+    const ips = cbInPorts(n);
+    for (let i = 0; i < ips.length; i++) {
+      if (Math.hypot(ips[i].x - mx, ips[i].y - my) < 12) {
+        if (cbPending && cbPending.isOutput) {
+          cbSaveHistory();
+          cbWires.push({ from: {nodeId: cbPending.nodeId, port: 'out'}, to: {nodeId: n.id, port: 'in'+i} });
+          cbPending = null; cbEval(); drawCB(); return;
+        }
+        cbPending = {nodeId: n.id, port: 'in'+i, isOutput: false};
+        drawCB(); return;
+      }
+    }
+    if (n.type === 'INPUT' && Math.hypot(n.x - mx, n.y - my) < INPUT_R) {
+      cbSaveHistory(); n.val ^= 1; cbPending = null; cbEval(); drawCB(); return;
+    }
+  }
+
+  if (cbPending) { cbPending = null; drawCB(); return; }
+
+  cbSaveHistory();
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const inputCount = cbNodes.filter(n => n.type === 'INPUT').length;
+  const label = cbTool === 'INPUT' ? (letters[inputCount] || ('I'+inputCount)) : cbTool + (cbNodes.filter(n=>n.type===cbTool).length||'');
+  const singleIn = ['NOT','INPUT'];
+  const nIn = singleIn.includes(cbTool) ? 1 : cbInputCount;
+  cbNodes.push({ id: cbNextId++, type: cbTool, x: mx, y: my, nInputs: nIn, label, val: 0 });
+  cbEval(); drawCB();
+}
+
+function cbOutPort(n) {
+  if (n.type === 'INPUT') return {x: n.x + INPUT_R, y: n.y};
+  return {x: n.x + CB_W/2 + 10, y: n.y};
+}
+
+function cbInPorts(n) {
+  if (n.type === 'INPUT') return [];
+  const nIn = n.nInputs || 2;
+  if (nIn === 1) return [{x: n.x - CB_W/2 - 10, y: n.y}];
+  const ports = [];
+  const spacing = Math.min(18, (CB_H * 1.2) / (nIn - 1));
+  const totalH = spacing * (nIn - 1);
+  for (let i = 0; i < nIn; i++) {
+    ports.push({ x: n.x - CB_W/2 - 10, y: n.y - totalH/2 + i * spacing });
+  }
+  return ports;
+}
+
+function cbEval() {
+  const vals = {};
+  cbNodes.forEach(n => { if (n.type === 'INPUT') vals[n.id] = n.val; });
+  for (let pass = 0; pass < cbNodes.length + 3; pass++) {
+    cbNodes.forEach(n => {
+      if (n.type === 'INPUT') return;
+      const nIn = n.nInputs || 2;
+      const inputVals = [];
+      for (let i = 0; i < nIn; i++) {
+        const w = cbWires.find(w => w.to.nodeId === n.id && w.to.port === 'in'+i);
+        inputVals.push(w !== undefined ? (vals[w.from.nodeId] ?? 0) : 0);
+      }
+      let result = inputVals[0] ?? 0;
+      switch(n.type) {
+        case 'AND':  result = inputVals.reduce((a,b) => a & b, 1); break;
+        case 'OR':   result = inputVals.reduce((a,b) => a | b, 0); break;
+        case 'NAND': result = (inputVals.reduce((a,b) => a & b, 1)) ^ 1; break;
+        case 'NOR':  result = (inputVals.reduce((a,b) => a | b, 0)) ^ 1; break;
+        case 'XOR':  result = inputVals.reduce((a,b) => a ^ b, 0); break;
+        case 'XNOR': result = (inputVals.reduce((a,b) => a ^ b, 0)) ^ 1; break;
+        case 'NOT':  result = (inputVals[0] ?? 0) ^ 1; break;
+      }
+      vals[n.id] = result;
+    });
+  }
+  cbNodes.forEach(n => { n.val = vals[n.id] ?? 0; });
+  const outputNodes = cbNodes.filter(n => n.type !== 'INPUT' && !cbWires.find(w => w.from.nodeId === n.id));
+  if (outputNodes.length > 0) {
+    const outNode = outputNodes[outputNodes.length - 1];
+    const expr = cbBuildExpr(outNode.id);
+    document.getElementById('cb-expr').textContent = 'F = ' + expr;
+    const outVal = outNode.val ?? 0;
+    const outEl = document.getElementById('cb-output');
+    outEl.textContent = outVal;
+    outEl.style.color = outVal ? 'var(--accent)' : 'var(--muted)';
+  } else {
+    document.getElementById('cb-expr').textContent = cbNodes.length ? 'Connect gates to output' : '—';
+    document.getElementById('cb-output').textContent = '—';
+  }
+  const listEl = document.getElementById('cb-nodes');
+  if (cbNodes.length === 0) { listEl.textContent = 'None placed'; return; }
+  listEl.innerHTML = cbNodes.map(n =>
+    `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)">
+      <span style="color:${n.type==='INPUT'?'var(--accent2)':'var(--text)'}">${n.label}${n.type!=='INPUT'?' ('+n.nInputs+'in)':''}</span>
+      <span style="color:${n.val?'var(--accent)':'var(--muted)'}">${n.val}</span>
+    </div>`
+  ).join('');
+}
+
+function cbBuildExpr(nodeId) {
+  const n = cbNodes.find(x => x.id === nodeId);
+  if (!n) return '?';
+  if (n.type === 'INPUT') return n.label;
+  const nIn = n.nInputs || 2;
+  const exprs = [];
+  for (let i = 0; i < nIn; i++) {
+    const w = cbWires.find(w => w.to.nodeId === nodeId && w.to.port === 'in'+i);
+    exprs.push(w ? cbBuildExpr(w.from.nodeId) : '0');
+  }
+  switch(n.type) {
+    case 'AND':  return '(' + exprs.join('·') + ')';
+    case 'OR':   return '(' + exprs.join('+') + ')';
+    case 'NOT':  return '¬' + exprs[0];
+    case 'NAND': return '¬(' + exprs.join('·') + ')';
+    case 'NOR':  return '¬(' + exprs.join('+') + ')';
+    case 'XOR':  return '(' + exprs.join('⊕') + ')';
+    case 'XNOR': return '¬(' + exprs.join('⊕') + ')';
+    default: return '?';
+  }
+}
+
+function cbFinish() { cbEval(); toast('Expression evaluated!'); }
+
+function drawCB() {
+  if (!cbCtx) return;
+  const c = cbCtx, cv = cbCanvas;
+  c.clearRect(0, 0, cv.width, cv.height);
+  c.strokeStyle = '#14141E'; c.lineWidth = 1;
+  for (let x = 0; x < cv.width; x += 25) { c.beginPath(); c.moveTo(x,0); c.lineTo(x,cv.height); c.stroke(); }
+  for (let y = 0; y < cv.height; y += 25) { c.beginPath(); c.moveTo(0,y); c.lineTo(cv.width,y); c.stroke(); }
+  if (cbNodes.length === 0) {
+    c.font = '13px Space Mono, monospace'; c.fillStyle = '#3A3A50'; c.textAlign = 'center';
+    c.fillText('Select tool · Click canvas to place · Right-click to delete', cv.width/2, cv.height/2 - 10);
+    c.fillText('Click output ● then input ● to connect gates', cv.width/2, cv.height/2 + 14);
+    return;
+  }
+  const hiC = '#00FF88', loC = '#3A3A50', pendC = '#FFD700';
+
+  cbWires.forEach(w => {
+    const fn = cbNodes.find(n => n.id === w.from.nodeId);
+    const tn = cbNodes.find(n => n.id === w.to.nodeId);
+    if (!fn || !tn) return;
+    const fp = cbOutPort(fn);
+    const tps = cbInPorts(tn);
+    const portIdx = parseInt(w.to.port.replace('in','')) || 0;
+    const tp = tps[portIdx] || tps[0];
+    if (!tp) return;
+    c.strokeStyle = fn.val ? hiC : loC; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(fp.x, fp.y);
+    const mx2 = (fp.x + tp.x) / 2;
+    c.bezierCurveTo(mx2, fp.y, mx2, tp.y, tp.x, tp.y);
+    c.stroke();
+  });
+
+  if (cbPending) {
+    const pn = cbNodes.find(n => n.id === cbPending.nodeId);
+    if (pn) {
+      let px, py;
+      if (cbPending.isOutput) { const op = cbOutPort(pn); px=op.x; py=op.y; }
+      else {
+        const ips = cbInPorts(pn);
+        const portIdx = parseInt(cbPending.port.replace('in','')) || 0;
+        const p = ips[portIdx] || ips[0];
+        if (p) { px=p.x; py=p.y; }
+      }
+      if (px !== undefined) {
+        c.strokeStyle = pendC; c.lineWidth = 1.5; c.setLineDash([4,3]);
+        c.beginPath(); c.moveTo(px,py); c.lineTo(cbMouse.x, cbMouse.y); c.stroke();
+        c.setLineDash([]);
+      }
+    }
+  }
+
+  cbNodes.forEach(n => {
+    const {x, y, type, val, label} = n;
+    const isOut = type !== 'INPUT' && !cbWires.find(w => w.from.nodeId === n.id);
+    const gateC = '#1E1E2A', outlineC = isOut ? '#00CCFF' : '#6060A0';
+
+    if (type === 'INPUT') {
+      c.beginPath(); c.arc(x, y, INPUT_R, 0, Math.PI*2);
+      c.fillStyle = val ? 'rgba(0,255,136,0.15)' : '#1A1A24';
+      c.strokeStyle = val ? hiC : loC; c.lineWidth = 2;
+      c.fill(); c.stroke();
+      c.fillStyle = val ? hiC : loC;
+      c.font = 'bold 12px Space Mono, monospace'; c.textAlign = 'center';
+      c.fillText(label, x, y - 4);
+      c.font = '11px Space Mono, monospace'; c.fillText(val, x, y + 10);
+      const op = cbOutPort(n);
+      c.beginPath(); c.arc(op.x, op.y, 6, 0, Math.PI*2);
+      c.fillStyle = cbPending?.nodeId===n.id&&cbPending.isOutput ? pendC : (val?hiC:loC); c.fill();
+      return;
+    }
+
+    const hw = CB_W/2, hh = CB_H/2;
+    c.lineWidth = 2; c.beginPath(); c.fillStyle = gateC; c.strokeStyle = outlineC;
+    if (type==='AND'||type==='NAND') { c.moveTo(x-hw,y-hh); c.lineTo(x-hw,y+hh); c.arc(x-hw,y,hh,-Math.PI/2,Math.PI/2); c.closePath(); }
+    else if (type==='OR'||type==='NOR') { c.moveTo(x-hw,y-hh); c.quadraticCurveTo(x,y-hh,x+hw,y); c.quadraticCurveTo(x,y+hh,x-hw,y+hh); c.quadraticCurveTo(x-hw+8,y,x-hw,y-hh); c.closePath(); }
+    else if (type==='XOR'||type==='XNOR') { c.moveTo(x-hw,y-hh); c.quadraticCurveTo(x,y-hh,x+hw,y); c.quadraticCurveTo(x,y+hh,x-hw,y+hh); c.quadraticCurveTo(x-hw+8,y,x-hw,y-hh); c.closePath(); }
+    else if (type==='NOT') { c.moveTo(x-hw,y-hh); c.lineTo(x-hw,y+hh); c.lineTo(x+hw-4,y); c.closePath(); }
+    c.fill(); c.stroke();
+
+    if (type==='XOR'||type==='XNOR') { c.beginPath(); c.strokeStyle=outlineC; c.lineWidth=2; c.moveTo(x-hw-6,y-hh); c.quadraticCurveTo(x-hw+2,y,x-hw-6,y+hh); c.stroke(); }
+    if (type==='NAND'||type==='NOR'||type==='XNOR'||type==='NOT') { const bx=type==='NOT'?x+hw+2:x+hw+4; c.beginPath(); c.arc(bx,y,5,0,Math.PI*2); c.fillStyle=gateC; c.strokeStyle=outlineC; c.lineWidth=1.5; c.fill(); c.stroke(); }
+
+    c.fillStyle='#9090C0'; c.font='bold 10px Space Mono, monospace'; c.textAlign='center';
+    c.fillText(type+(n.nInputs>2?'('+n.nInputs+')':''), x, y+hh+14);
+
+    const ips = cbInPorts(n);
+    ips.forEach((p, i) => {
+      const portKey = 'in'+i;
+      const isActive = cbPending?.nodeId===n.id && cbPending.port===portKey && !cbPending.isOutput;
+      c.beginPath(); c.arc(p.x,p.y,5,0,Math.PI*2);
+      c.fillStyle=isActive?pendC:'#2A2A40'; c.strokeStyle=isActive?pendC:'#5050A0'; c.lineWidth=1.5; c.fill(); c.stroke();
+      // input label
+      c.fillStyle='#505070'; c.font='9px Space Mono,monospace'; c.textAlign='right';
+      c.fillText('i'+i, p.x-7, p.y+3);
+    });
+
+    const op = cbOutPort(n);
+    c.beginPath(); c.arc(op.x,op.y,6,0,Math.PI*2);
+    c.fillStyle=cbPending?.nodeId===n.id&&cbPending.isOutput?pendC:(val?hiC:loC);
+    c.strokeStyle=outlineC; c.lineWidth=1.5; c.fill(); c.stroke();
+    const outEnd = type==='NAND'||type==='NOR'||type==='XNOR'?x+hw+10:type==='NOT'?x+hw+6:x+hw;
+    c.strokeStyle=val?hiC:loC; c.lineWidth=2;
+    c.beginPath(); c.moveTo(outEnd,y); c.lineTo(op.x-1,y); c.stroke();
+    c.fillStyle=val?hiC:loC; c.font='bold 11px Space Mono,monospace'; c.textAlign='center';
+    c.fillText(val, op.x+12, y+4);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   MUX SVG FIGURES
+══════════════════════════════════════════════════ */
+function drawMuxFig(containerId, nInputs, selBits, activeInput, inputVals, out) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const hi='#00FF88', lo='#3A3A50', sel='#00CCFF', body='#1E1E2A', out_c = out ? hi : lo;
+  const H = Math.max(120, nInputs * 22 + 40);
+  const W = 320;
+  const yCenter = H / 2;
+  let lines = '';
+
+  // Input wires
+  for (let i = 0; i < nInputs; i++) {
+    const iy = 30 + i * ((H - 60) / (nInputs - 1 || 1));
+    const isActive = i === activeInput;
+    const wc = (inputVals && inputVals[i]) ? hi : lo;
+    lines += `<line x1="10" y1="${iy}" x2="90" y2="${iy}" stroke="${isActive ? wc : lo}" stroke-width="${isActive?2.5:1.5}"/>`;
+    lines += `<text x="8" y="${iy+4}" fill="${isActive?'#E8E8F0':'#606080'}" font-family="monospace" font-size="10" text-anchor="end">I${i}</text>`;
+    if (inputVals) {
+      lines += `<circle cx="20" cy="${iy}" r="5" fill="${inputVals[i]?'rgba(0,255,136,0.2)':body}" stroke="${wc}" stroke-width="1.5"/>`;
+      lines += `<text x="20" y="${iy+3}" fill="${wc}" font-family="monospace" font-size="8" text-anchor="middle">${inputVals[i]||0}</text>`;
+    }
+  }
+
+  // MUX body
+  const topY = 20, botY = H - 20;
+  lines += `<polygon points="90,${topY} 90,${botY} 210,${botY-20} 210,${topY+20}" fill="${body}" stroke="#6060A0" stroke-width="2"/>`;
+  lines += `<text x="150" y="${yCenter+5}" fill="#9090C0" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">${nInputs}:1</text>`;
+  lines += `<text x="150" y="${yCenter+20}" fill="#606080" font-family="monospace" font-size="10" text-anchor="middle">MUX</text>`;
+
+  // Select lines
+  for (let s = 0; s < selBits; s++) {
+    const sx = 130 + s * 20;
+    lines += `<line x1="${sx}" y1="${H-20}" x2="${sx}" y2="${H}" stroke="${sel}" stroke-width="2"/>`;
+    lines += `<text x="${sx}" y="${H+12}" fill="${sel}" font-family="monospace" font-size="10" text-anchor="middle">S${s}</text>`;
+  }
+
+  // Output
+  lines += `<line x1="210" y1="${yCenter}" x2="290" y2="${yCenter}" stroke="${out_c}" stroke-width="2.5"/>`;
+  lines += `<circle cx="288" cy="${yCenter}" r="5" fill="${out_c}"/>`;
+  lines += `<text x="298" y="${yCenter+4}" fill="${out_c}" font-family="monospace" font-size="12" font-weight="bold">Y=${out?1:0}</text>`;
+
+  el.innerHTML = `<svg width="${W}" height="${H+20}" viewBox="0 0 ${W} ${H+20}">${lines}</svg>`;
+}
+
+function drawDecFig(containerId, nAddressBits, activeOutput, en) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const nOut = Math.pow(2, nAddressBits);
+  const hi='#00FF88', lo='#3A3A50', body='#1E1E2A', selC='#FF6B35';
+  const H = Math.max(140, nOut * 20 + 40);
+  const W = 300;
+  let lines = '';
+
+  // Address inputs
+  for (let a = 0; a < nAddressBits; a++) {
+    const ay = 30 + a * 22;
+    lines += `<line x1="10" y1="${ay}" x2="80" y2="${ay}" stroke="#7070A0" stroke-width="1.5"/>`;
+    lines += `<text x="8" y="${ay+4}" fill="#606080" font-family="monospace" font-size="10" text-anchor="end">A${a}</text>`;
+  }
+
+  // EN line
+  const enY = H/2 + 20;
+  lines += `<line x1="60" y1="${H-10}" x2="130" y2="${H-10}" stroke="${en?hi:lo}" stroke-width="1.5"/>`;
+  lines += `<text x="58" y="${H-6}" fill="${en?hi:lo}" font-family="monospace" font-size="10" text-anchor="end">EN</text>`;
+
+  // Decoder body
+  lines += `<rect x="80" y="10" width="80" height="${H-20}" rx="6" fill="${body}" stroke="#6060A0" stroke-width="2"/>`;
+  lines += `<text x="120" y="${H/2+5}" fill="#9090C0" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">${nAddressBits}:${nOut}</text>`;
+  lines += `<text x="120" y="${H/2+18}" fill="#606080" font-family="monospace" font-size="9" text-anchor="middle">DEC</text>`;
+
+  // Output wires
+  for (let o = 0; o < Math.min(nOut, 16); o++) {
+    const oy = 20 + o * ((H - 30) / (Math.min(nOut,16) - 1 || 1));
+    const isActive = en && o === activeOutput;
+    const wc = isActive ? hi : lo;
+    lines += `<line x1="160" y1="${oy}" x2="240" y2="${oy}" stroke="${wc}" stroke-width="${isActive?2.5:1.5}"/>`;
+    lines += `<circle cx="238" cy="${oy}" r="${isActive?5:3}" fill="${wc}"/>`;
+    lines += `<text x="245" y="${oy+4}" fill="${isActive?'#E8E8F0':'#404060'}" font-family="monospace" font-size="${isActive?10:9}">Y${o}</text>`;
+  }
+
+  el.innerHTML = `<svg width="${W}" height="${H+10}" viewBox="0 0 ${W} ${H+10}">${lines}</svg>`;
+}
+
+/* ══════════════════════════════════════════════════
+   MULTIPLEXERS — full with 16:1 + F→MUX solver
+══════════════════════════════════════════════════ */
+let mux21State = {i0:0,i1:0,s:0};
+let mux41State = {i0:0,i1:0,i2:0,i3:0,s0:0,s1:0};
+let dmxState   = {d:0,s0:0,s1:0};
+let mux16State = {};
+
+function mux21Toggle(k){ mux21State[k]^=1; updateMux21(); }
+function updateMux21(){
+  const {i0,i1,s}=mux21State; const out=s?i1:i0;
+  ['i0','i1','s'].forEach(k=>{ const btn=document.getElementById('mux21-'+k); if(!btn)return; btn.textContent=mux21State[k]; btn.style.color=mux21State[k]?'var(--accent)':'var(--muted)'; });
+  const outEl=document.getElementById('mux21-out'); if(outEl){outEl.textContent=out;outEl.style.color=out?'var(--accent)':'var(--muted)';}
+  drawMuxFig('mux21-fig', 2, 1, s, [i0,i1], out);
+}
+
+function mux41Toggle(k){ mux41State[k]^=1; updateMux41(); }
+function updateMux41(){
+  const {i0,i1,i2,i3,s0,s1}=mux41State; const sel=s1*2+s0; const inputs=[i0,i1,i2,i3]; const out=inputs[sel];
+  ['i0','i1','i2','i3','s0','s1'].forEach(k=>{ const btn=document.getElementById('mux41-'+k); if(!btn)return; btn.textContent=mux41State[k]; btn.style.color=mux41State[k]?'var(--accent)':'var(--muted)'; });
+  const selEl=document.getElementById('mux41-sel'); if(selEl) selEl.textContent=sel;
+  const outEl=document.getElementById('mux41-out'); if(outEl){outEl.textContent=out;outEl.style.color=out?'var(--accent)':'var(--muted)';}
+  drawMuxFig('mux41-fig', 4, 2, sel, inputs, out);
+}
+
+// Init 16:1 MUX
+function initMux16() {
+  for (let i = 0; i < 16; i++) mux16State['i'+i] = 0;
+  for (let s = 0; s < 4; s++) mux16State['s'+s] = 0;
+  const inputsEl = document.getElementById('mux16-inputs');
+  const selEl = document.getElementById('mux16-selects');
+  if (!inputsEl || !selEl) return;
+  inputsEl.innerHTML = '';
+  for (let i = 0; i < 16; i++) {
+    const d = document.createElement('div');
+    d.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px">I${i}</div>
+      <button class="calc-btn" id="mux16-i${i}" onclick="mux16Toggle('i${i}')" style="padding:8px;font-size:12px">0</button>`;
+    inputsEl.appendChild(d);
+  }
+  selEl.innerHTML = '';
+  for (let s = 0; s < 4; s++) {
+    const d = document.createElement('div');
+    d.innerHTML = `<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">S${s}</div>
+      <button class="calc-btn" id="mux16-s${s}" onclick="mux16Toggle('s${s}')" style="padding:10px;color:var(--accent2)">0</button>`;
+    selEl.appendChild(d);
+  }
+  updateMux16();
+}
+
+function mux16Toggle(k){ mux16State[k]^=1; updateMux16(); }
+function updateMux16(){
+  let sel = 0;
+  for (let s = 3; s >= 0; s--) sel = sel*2 + (mux16State['s'+s]||0);
+  const out = mux16State['i'+sel]||0;
+  for (let i = 0; i < 16; i++) { const btn=document.getElementById('mux16-i'+i); if(btn){btn.textContent=mux16State['i'+i]||0;btn.style.color=(mux16State['i'+i])?'var(--accent)':'var(--muted)';} }
+  for (let s = 0; s < 4; s++) { const btn=document.getElementById('mux16-s'+s); if(btn){btn.textContent=mux16State['s'+s]||0;btn.style.color=(mux16State['s'+s])?'var(--accent2)':'var(--muted)';} }
+  const selBin = sel.toString(2).padStart(4,'0');
+  const selValEl=document.getElementById('mux16-sel-val'); if(selValEl)selValEl.textContent=selBin;
+  const selEl=document.getElementById('mux16-sel'); if(selEl)selEl.textContent=sel;
+  const outEl=document.getElementById('mux16-out'); if(outEl){outEl.textContent=out;outEl.style.color=out?'var(--accent)':'var(--muted)';}
+  const inputs = Array.from({length:16},(_,i)=>mux16State['i'+i]||0);
+  drawMuxFig('mux16-fig', 16, 4, sel, inputs, out);
+}
+
+function dmxToggle(k){ dmxState[k]^=1; updateDmx(); }
+function updateDmx(){
+  const {d,s0,s1}=dmxState; const sel=s1*2+s0;
+  ['d','s0','s1'].forEach(k=>{ const btn=document.getElementById('dmx-'+k); if(!btn)return; btn.textContent=dmxState[k]; btn.style.color=dmxState[k]?'var(--accent)':'var(--muted)'; });
+  for(let i=0;i<4;i++){
+    const val=i===sel?d:0;
+    const el=document.getElementById('dmx-y'+i); if(!el)return;
+    const inner=el.querySelector('div:last-child'); if(inner){inner.textContent=val;inner.style.color=val?'var(--accent)':'var(--muted)';}
+    el.style.opacity=i===sel?1:0.4;
+  }
+}
+
+/* F → MUX solver */
+function solveMux() {
+  const varsRaw = document.getElementById('mux-solver-vars').value.trim().toUpperCase();
+  const minRaw  = document.getElementById('mux-solver-minterms').value.trim();
+  const vars = varsRaw.split(',').map(v=>v.trim()).filter(Boolean);
+  const n = vars.length;
+  if (n < 1 || n > 5) { document.getElementById('mux-solver-result').innerHTML = `<span style="color:var(--danger)">Use 1–5 variables.</span>`; return; }
+  const minterms = minRaw.split(',').map(s=>parseInt(s.trim())).filter(x=>!isNaN(x));
+  const maxRows = Math.pow(2, n);
+  const truthTable = Array(maxRows).fill(0);
+  minterms.forEach(m => { if (m < maxRows) truthTable[m] = 1; });
+
+  // Use (n-1) MUX: fix first variable as select, derive data inputs
+  const selVars = vars.slice(0, n-1);
+  const dataVar = vars[n-1];
+  const selCount = Math.pow(2, selVars.length);
+  const dataInputs = [];
+
+  for (let s = 0; s < selCount; s++) {
+    const m0 = (s << 1) | 0; // data var = 0
+    const m1 = (s << 1) | 1; // data var = 1
+    const f0 = m0 < maxRows ? truthTable[m0] : 0;
+    const f1 = m1 < maxRows ? truthTable[m1] : 0;
+    let expr = '';
+    if (f0===0 && f1===0) expr = '0';
+    else if (f0===1 && f1===1) expr = '1';
+    else if (f0===0 && f1===1) expr = dataVar;
+    else expr = '¬' + dataVar;
+    dataInputs.push({ idx: s, expr, f0, f1 });
+  }
+
+  const muxSize = `${selCount}:1`;
+  const sop = minterms.map(m => {
+    const bits = m.toString(2).padStart(n,'0');
+    return bits.split('').map((b,i) => b==='0'?'¬'+vars[i]:vars[i]).join('·');
+  }).join(' + ') || '0';
+
+  const subEl = document.getElementById('mux-solver-result');
+  subEl.innerHTML = `
+    <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:8px;letter-spacing:1px">SOLUTION — ${n}-var function using ${muxSize} MUX (select: ${selVars.join(',')}; data var: ${dataVar})</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--accent);margin-bottom:10px">F(${vars.join(',')}) = Σm(${minterms.join(',')}) = ${sop}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px">
+        ${dataInputs.map(d => {
+          const selBits = d.idx.toString(2).padStart(selVars.length,'0');
+          const selLabel = selVars.map((v,i)=>`${v}=${selBits[i]}`).join(', ');
+          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">I${d.idx} (${selLabel})</div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${d.expr==='0'?'var(--muted)':d.expr==='1'?'var(--accent)':'var(--accent2)'}">${d.expr}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  // Draw MUX figure
+  const figEl = document.getElementById('mux-solver-fig');
+  figEl.innerHTML = `<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Circuit Diagram — ${muxSize} MUX</div>`;
+  const svgW = 400, svgH = Math.max(160, selCount * 28 + 60);
+  const hi='#00FF88', lo='#3A3A50', selC='#00CCFF', bodyC='#1E1E2A';
+  let svg = `<svg width="${svgW}" height="${svgH+20}" viewBox="0 0 ${svgW} ${svgH+20}" style="background:var(--bg);border-radius:8px;border:1px solid var(--border)">`;
+  const yC = svgH/2;
+  svg += `<polygon points="90,20 90,${svgH-20} 190,${svgH-40} 190,40" fill="${bodyC}" stroke="#6060A0" stroke-width="2"/>`;
+  svg += `<text x="140" y="${yC+4}" fill="#9090C0" font-family="monospace" font-size="11" text-anchor="middle">${muxSize} MUX</text>`;
+  dataInputs.forEach((d, i) => {
+    const iy = 30 + i * ((svgH - 60) / (selCount - 1 || 1));
+    const ec = d.expr==='0'?lo:d.expr==='1'?hi:selC;
+    svg += `<line x1="10" y1="${iy}" x2="90" y2="${iy}" stroke="${ec}" stroke-width="2"/>`;
+    svg += `<text x="8" y="${iy+4}" fill="${ec}" font-family="monospace" font-size="10" text-anchor="end">I${i}</text>`;
+    svg += `<text x="30" y="${iy-3}" fill="${ec}" font-family="monospace" font-size="9">${d.expr}</text>`;
+  });
+  for (let s = 0; s < selVars.length; s++) {
+    const sx = 120 + s * 20;
+    svg += `<line x1="${sx}" y1="${svgH-20}" x2="${sx}" y2="${svgH}" stroke="${selC}" stroke-width="2"/>`;
+    svg += `<text x="${sx}" y="${svgH+12}" fill="${selC}" font-family="monospace" font-size="10" text-anchor="middle">${selVars[s]}</text>`;
+  }
+  svg += `<line x1="190" y1="${yC}" x2="280" y2="${yC}" stroke="${hi}" stroke-width="2.5"/>`;
+  svg += `<text x="285" y="${yC+4}" fill="${hi}" font-family="monospace" font-size="11">F</text>`;
+  svg += '</svg>';
+  figEl.innerHTML += svg;
+}
+
+/* ══════════════════════════════════════════════════
+   DECODERS — full with F→Decoder solver + figures
+══════════════════════════════════════════════════ */
+let dec24State={a0:0,a1:0,en:1};
+let dec38State={a0:0,a1:0,a2:0,en:1};
+let encState={i0:0,i1:0,i2:0,i3:0};
+
+function dec24Toggle(k){dec24State[k]^=1;updateDec24();}
+function updateDec24(){
+  const {a0,a1,en}=dec24State; const sel=a1*2+a0;
+  ['a0','a1','en'].forEach(k=>{ const btn=document.getElementById('dec24-'+k); if(!btn)return; btn.textContent=dec24State[k]; btn.style.color=dec24State[k]?'var(--accent)':'var(--muted)'; });
+  const out=document.getElementById('dec24-outputs'); if(!out)return;
+  out.innerHTML='';
+  for(let i=0;i<4;i++){
+    const active=en&&i===sel;
+    const d=document.createElement('div'); d.style.cssText='text-align:center';
+    d.innerHTML=`<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">Y${i}</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;padding:8px;background:var(--bg);border:1px solid ${active?'var(--accent)':'var(--border)'};border-radius:6px;color:${active?'var(--accent)':'var(--muted)'}">${active?1:0}</div>`;
+    out.appendChild(d);
+  }
+  const actEl=document.getElementById('dec24-active'); if(actEl)actEl.textContent=en?`Active: Y${sel}`:'Disabled (EN=0)';
+  drawDecFig('dec24-fig', 2, sel, en);
+}
+
+function dec38Toggle(k){dec38State[k]^=1;updateDec38();}
+function updateDec38(){
+  const {a0,a1,a2,en}=dec38State; const sel=a2*4+a1*2+a0;
+  ['a0','a1','a2','en'].forEach(k=>{ const btn=document.getElementById('dec38-'+k); if(!btn)return; btn.textContent=dec38State[k]; btn.style.color=dec38State[k]?'var(--accent)':'var(--muted)'; });
+  const out=document.getElementById('dec38-outputs'); if(!out)return;
+  out.innerHTML='';
+  for(let i=0;i<8;i++){
+    const active=en&&i===sel;
+    const d=document.createElement('div'); d.style.cssText='text-align:center';
+    d.innerHTML=`<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:3px">Y${i}</div>
+      <div style="font-family:var(--mono);font-size:18px;font-weight:700;padding:6px;background:var(--bg);border:1px solid ${active?'var(--accent)':'var(--border)'};border-radius:6px;color:${active?'var(--accent)':'var(--muted)'}">${active?1:0}</div>`;
+    out.appendChild(d);
+  }
+  const actEl=document.getElementById('dec38-active'); if(actEl)actEl.textContent=en?`Active: Y${sel}`:'Disabled (EN=0)';
+  drawDecFig('dec38-fig', 3, sel, en);
+}
+
+function encToggle(k){encState[k]^=1;updateEnc();}
+function updateEnc(){
+  const {i0,i1,i2,i3}=encState;
+  ['i0','i1','i2','i3'].forEach(k=>{ const btn=document.getElementById('enc-'+k); if(!btn)return; btn.textContent=encState[k]; btn.style.color=encState[k]?'var(--accent)':'var(--muted)'; });
+  let pri=-1;
+  if(i3)pri=3; else if(i2)pri=2; else if(i1)pri=1; else if(i0)pri=0;
+  const valid=pri>=0?1:0;
+  const y1=valid?(pri>>1)&1:0, y0=valid?pri&1:0;
+  const ey1=document.getElementById('enc-y1'); if(ey1){ey1.textContent=y1;ey1.style.color=y1?'var(--accent)':'var(--muted)';}
+  const ey0=document.getElementById('enc-y0'); if(ey0){ey0.textContent=y0;ey0.style.color=y0?'var(--accent)':'var(--muted)';}
+  const ev=document.getElementById('enc-v'); if(ev){ev.textContent=valid;ev.style.color=valid?'var(--accent3)':'var(--muted)';}
+  const emsg=document.getElementById('enc-msg'); if(emsg)emsg.textContent=valid?`I${pri} active → ${y1}${y0}`:'No active input';
+}
+
+/* F → Decoder solver */
+function solveDecoder() {
+  const varsRaw = document.getElementById('dec-solver-vars').value.trim().toUpperCase();
+  const minRaw  = document.getElementById('dec-solver-minterms').value.trim();
+  const vars = varsRaw.split(',').map(v=>v.trim()).filter(Boolean);
+  const n = vars.length;
+  if (n < 1 || n > 4) { document.getElementById('dec-solver-result').innerHTML=`<span style="color:var(--danger)">Use 1–4 variables.</span>`; return; }
+  const minterms = minRaw.split(',').map(s=>parseInt(s.trim())).filter(x=>!isNaN(x));
+  const nOut = Math.pow(2, n);
+
+  const sop = minterms.map(m => {
+    const bits = m.toString(2).padStart(n,'0');
+    return `m${m}`;
+  }).join(' + ') || '0';
+
+  const termExprs = minterms.map(m => {
+    const bits = m.toString(2).padStart(n,'0');
+    return bits.split('').map((b,i) => b==='0'?'¬'+vars[i]:vars[i]).join('·');
+  });
+
+  const subEl = document.getElementById('dec-solver-result');
+  subEl.innerHTML = `
+    <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--accent3);margin-bottom:8px;letter-spacing:1px">SOLUTION — ${n}-var function using ${n}:${nOut} Decoder + OR gate</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--accent);margin-bottom:10px">F(${vars.join(',')}) = Σm(${minterms.join(',')})</div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:8px">
+        Implementation: <span style="color:var(--accent2)">F = ${minterms.map(m=>'Y'+m).join(' + ')}</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--muted)">
+        The OR gate has ${minterms.length} input${minterms.length!==1?'s':''}.<br>
+        Each Yᵢ output of the decoder corresponds to minterm mᵢ.<br>
+        Connect outputs ${minterms.map(m=>'Y'+m).join(', ')} to an ${minterms.length}-input OR gate.
+      </div>
+    </div>`;
+
+  // Draw decoder+OR figure
+  const figEl = document.getElementById('dec-solver-fig');
+  const svgW = 500, svgH = Math.max(180, nOut * 22 + 60);
+  const hi='#00FF88', lo='#3A3A50', orC='#FF6B35', bodyC='#1E1E2A';
+  let svg = `<svg width="${svgW}" height="${svgH+20}" viewBox="0 0 ${svgW} ${svgH+20}" style="background:var(--bg);border-radius:8px;border:1px solid var(--border)">`;
+
+  // Address inputs
+  for (let a = 0; a < n; a++) {
+    const ay = 30 + a * 22;
+    svg += `<line x1="10" y1="${ay}" x2="80" y2="${ay}" stroke="#7070A0" stroke-width="2"/>`;
+    svg += `<text x="8" y="${ay+4}" fill="#9090C0" font-family="monospace" font-size="11" text-anchor="end">${vars[a]}</text>`;
+  }
+
+  // Decoder body
+  svg += `<rect x="80" y="10" width="80" height="${svgH-20}" rx="6" fill="${bodyC}" stroke="#6060A0" stroke-width="2"/>`;
+  svg += `<text x="120" y="${svgH/2}" fill="#9090C0" font-family="monospace" font-size="10" font-weight="bold" text-anchor="middle">${n}:${nOut}</text>`;
+  svg += `<text x="120" y="${svgH/2+14}" fill="#606080" font-family="monospace" font-size="9" text-anchor="middle">DEC</text>`;
+
+  // Output wires from decoder
+  const orInputs = [];
+  for (let o = 0; o < nOut; o++) {
+    const oy = 20 + o * ((svgH - 30) / (nOut - 1 || 1));
+    const isMinterm = minterms.includes(o);
+    const wc = isMinterm ? hi : lo;
+    svg += `<line x1="160" y1="${oy}" x2="230" y2="${oy}" stroke="${wc}" stroke-width="${isMinterm?2:1.5}"/>`;
+    svg += `<text x="232" y="${oy+4}" fill="${wc}" font-family="monospace" font-size="9">Y${o}</text>`;
+    if (isMinterm) orInputs.push(oy);
+  }
+
+  // OR gate body
+  if (orInputs.length > 0) {
+    const orY = orInputs.reduce((a,b)=>a+b,0) / orInputs.length;
+    const orH = Math.max(30, orInputs.length * 14);
+    const orX = 290;
+    svg += `<path d="M${orX},${orY-orH/2} Q${orX+20},${orY-orH/2} ${orX+40},${orY} Q${orX+20},${orY+orH/2} ${orX},${orY+orH/2} Q${orX+8},${orY} ${orX},${orY-orH/2} Z" fill="${bodyC}" stroke="${orC}" stroke-width="2"/>`;
+    svg += `<text x="${orX+20}" y="${orY+4}" fill="${orC}" font-family="monospace" font-size="10" text-anchor="middle">OR</text>`;
+    orInputs.forEach(iy => { svg += `<line x1="260" y1="${iy}" x2="${orX}" y2="${orY}" stroke="${hi}" stroke-width="1.5" stroke-dasharray="3,2"/>`; });
+    svg += `<line x1="${orX+40}" y1="${orY}" x2="${svgW-20}" y2="${orY}" stroke="${hi}" stroke-width="2.5"/>`;
+    svg += `<text x="${svgW-18}" y="${orY+4}" fill="${hi}" font-family="monospace" font-size="12" font-weight="bold">F</text>`;
+  }
+
+  svg += '</svg>';
+  figEl.innerHTML = `<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px">Circuit Diagram — ${n}:${nOut} Decoder + OR Gate</div>` + svg;
+}
+
+/* ══════════════════════════════════════════════════
+   SEQUENTIAL CIRCUITS
+══════════════════════════════════════════════════ */
+let srState={s:0,r:0,q:0,qb:1}; let srHist=[];
+let dfState={d:0,q:0,qb:1}; let dfHist=[];
+let jkState={j:0,k:0,q:0,qb:1}; let jkHist=[];
+let tfState={t:0,q:0,qb:1,clocks:0};
+let counterState={val:0};
+
+function updateFF(elQ,elQb,elState,q,stateText){
+  document.getElementById(elQ).textContent=q;
+  document.getElementById(elQ).style.color=q?'var(--accent)':'var(--muted)';
+  document.getElementById(elQb).textContent=q^1;
+  document.getElementById(elQb).style.color=(q^1)?'var(--accent)':'var(--muted)';
+  if(elState)document.getElementById(elState).textContent=stateText;
+}
+
+function addHist(arr,el,entry){
+  arr.unshift(entry); if(arr.length>5)arr.pop();
+  document.getElementById(el).innerHTML=arr.map(e=>`<span style="color:var(--muted);margin-right:8px">${e}</span>`).join('');
+}
+
+function srToggle(k){srState[k]^=1; const btn=document.getElementById('sr-'+k); btn.textContent=srState[k]; btn.style.color=srState[k]?'var(--accent)':'var(--muted)';}
+function srClock(){
+  const {s,r,q}=srState; let nq=q, st='HOLD';
+  if(s&&r){nq=undefined; st='INVALID ⚠';}
+  else if(s&&!r){nq=1; st='SET';}
+  else if(!s&&r){nq=0; st='RESET';}
+  if(nq!==undefined){srState.q=nq; srState.qb=nq^1;}
+  updateFF('sr-q','sr-qb','sr-state',srState.q,st);
+  addHist(srHist,'sr-history',`S=${s},R=${r}→Q=${nq??'X'}(${st})`);
+}
+
+function dfToggle(){dfState.d^=1; const btn=document.getElementById('df-d'); btn.textContent=dfState.d; btn.style.color=dfState.d?'var(--accent)':'var(--muted)';}
+function dfClock(){dfState.q=dfState.d; dfState.qb=dfState.d^1; updateFF('df-q','df-qb',null,dfState.q,''); addHist(dfHist,'df-history',`D=${dfState.d}→Q=${dfState.q}`);}
+function dfReset(){dfState.q=0;dfState.qb=1;dfState.d=0; document.getElementById('df-d').textContent=0; document.getElementById('df-d').style.color='var(--muted)'; updateFF('df-q','df-qb',null,0,'');}
+
+function jkToggle(k){jkState[k]^=1; const btn=document.getElementById('jk-'+k); btn.textContent=jkState[k]; btn.style.color=jkState[k]?'var(--accent)':'var(--muted)';}
+function jkClock(){
+  const {j,k,q}=jkState; let nq=q, st='HOLD';
+  if(j&&k){nq=q^1; st='TOGGLE';}
+  else if(j&&!k){nq=1; st='SET';}
+  else if(!j&&k){nq=0; st='RESET';}
+  jkState.q=nq; jkState.qb=nq^1;
+  updateFF('jk-q','jk-qb','jk-state',nq,st);
+}
+
+function tfToggle(){tfState.t^=1; const btn=document.getElementById('tf-t'); btn.textContent=tfState.t; btn.style.color=tfState.t?'var(--accent)':'var(--muted)';}
+function tfClock(){
+  tfState.clocks++;
+  if(tfState.t){tfState.q^=1; tfState.qb=tfState.q^1;}
+  updateFF('tf-q','tf-qb',null,tfState.q,'');
+  document.getElementById('tf-count').textContent='Clocks: '+tfState.clocks;
+}
+
+function counterClock(){
+  counterState.val=(counterState.val+1)%16;
+  updateCounter();
+}
+function counterReset(){counterState.val=0;updateCounter();}
+function updateCounter(){
+  const v=counterState.val;
+  const bits=v.toString(2).padStart(4,'0');
+  const bitsEl=document.getElementById('counter-bits');
+  bitsEl.innerHTML=bits.split('').map((b,i)=>
+    `<div style="text-align:center">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:3px">Q${3-i}</div>
+      <div style="font-family:var(--mono);font-size:22px;font-weight:700;padding:8px 12px;background:var(--bg);border:1px solid ${b==='1'?'var(--accent)':'var(--border)'};border-radius:6px;color:${b==='1'?'var(--accent)':'var(--muted)'}">${b}</div>
+    </div>`
+  ).join('');
+  document.getElementById('counter-dec').textContent=v;
+  document.getElementById('counter-hex').textContent=v.toString(16).toUpperCase();
+}
+
+/* ══════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════ */
+generateTruth();
+initBoolLaws();
+initKmap();
+updateMux21();
+updateMux41();
+initMux16();
+updateDmx();
+updateDec24();
+updateDec38();
+updateEnc();
+updateCounter();
+</script>
+</body>
+</html>

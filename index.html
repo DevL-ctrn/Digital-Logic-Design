@@ -459,7 +459,27 @@ td.zero { color: var(--muted); }
   .page-header { margin-bottom: 18px; }
 }
 
-/* Small mobile: ≤480 */
+/* ── BACK BUTTON ── */
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: all .15s;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.back-home:hover { color: var(--accent); border-color: var(--accent); background: rgba(0,255,136,0.05); }
+
+/* ── SMALL mobile: ≤480 */
 @media (max-width: 480px) {
   .page { padding: 12px 10px; }
   .page-title { font-size: 18px; }
@@ -611,6 +631,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: CALCULATOR ══════════════════════ -->
 <div class="page" id="page-calculator">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_01</div>
     <div class="page-title">Logic Calculator</div>
@@ -709,6 +730,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: GATES ══════════════════════ -->
 <div class="page" id="page-gates">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_02</div>
     <div class="page-title">Logic Gates</div>
@@ -730,6 +752,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: TRUTH TABLES ══════════════════════ -->
 <div class="page" id="page-truth">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_03</div>
     <div class="page-title">Truth Tables</div>
@@ -758,6 +781,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: BOOLEAN ALGEBRA ══════════════════════ -->
 <div class="page" id="page-boolean">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_04</div>
     <div class="page-title">Boolean Algebra</div>
@@ -786,6 +810,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: KMAP ══════════════════════ -->
 <div class="page" id="page-kmap">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_05</div>
     <div class="page-title">Karnaugh Map</div>
@@ -823,6 +848,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: CIRCUIT BUILDER ══════════════════════ -->
 <div class="page" id="page-circuit">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_06</div>
     <div class="page-title">Circuit Builder</div>
@@ -890,6 +916,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: MULTIPLEXERS ══════════════════════ -->
 <div class="page" id="page-mux">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// component_01</div>
     <div class="page-title">Multiplexers</div>
@@ -991,6 +1018,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: DECODERS ══════════════════════ -->
 <div class="page" id="page-decoder">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// component_02</div>
     <div class="page-title">Decoders & Encoders</div>
@@ -1085,6 +1113,7 @@ td.zero { color: var(--muted); }
 
 <!-- ══════════════════════ PAGE: SEQUENTIAL CIRCUITS ══════════════════════ -->
 <div class="page" id="page-sequential">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// component_03</div>
     <div class="page-title">Sequential Circuits</div>
@@ -1173,6 +1202,7 @@ td.zero { color: var(--muted); }
   </div>
 </div>
 <div class="page" id="page-reference">
+  <button class="back-home" onclick="showPage('home')">← Home</button>
   <div class="page-header">
     <div class="page-tag">// tool_07</div>
     <div class="page-title">Reference Sheet</div>
@@ -1263,12 +1293,27 @@ td.zero { color: var(--muted); }
 
 <script>
 /* ══════════════════════════════════════════════════
-   NAVIGATION
+   NAVIGATION + MOBILE SIDEBAR
 ══════════════════════════════════════════════════ */
+function toggleSidebar() {
+  const s = document.getElementById('sidebar-nav');
+  const o = document.getElementById('sidebar-overlay');
+  if (!s || !o) return;
+  s.classList.toggle('open');
+  o.classList.toggle('show');
+}
+function closeSidebar() {
+  const s = document.getElementById('sidebar-nav');
+  const o = document.getElementById('sidebar-overlay');
+  if (s) s.classList.remove('open');
+  if (o) o.classList.remove('show');
+}
+
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
+  const pageEl = document.getElementById('page-' + name);
+  if (pageEl) pageEl.classList.add('active');
   const navEl = document.getElementById('nav-' + name);
   if (navEl) navEl.classList.add('active');
   if (name === 'gates')   initGates();
@@ -1276,6 +1321,8 @@ function showPage(name) {
   if (name === 'boolean') initBoolLaws();
   if (name === 'kmap')    initKmap();
   if (name === 'circuit') initCircuit();
+  closeSidebar();
+  window.scrollTo(0, 0);
 }
 
 function toast(msg) {
@@ -1515,60 +1562,174 @@ function toggleInput(gid, inp) {
 }
 
 /* ══════════════════════════════════════════════════
-   TRUTH TABLES
+   TRUTH TABLES — clean tokeniser-based parser
 ══════════════════════════════════════════════════ */
 function generateTruth() {
-  const expr = document.getElementById('truth-expr').value.trim().toUpperCase();
-  const vars = [];
-  if (expr.includes('A')) vars.push('A');
-  if (expr.includes('B')) vars.push('B');
-  if (expr.includes('C')) vars.push('C');
-  if (vars.length === 0) { document.getElementById('truth-output').innerHTML = '<span style="color:var(--danger)">No variables found. Use A, B, C.</span>'; return; }
+  const raw = document.getElementById('truth-expr').value.trim();
+  if (!raw) return;
+  const expr = raw.toUpperCase();
 
-  const rows = Math.pow(2, vars.length);
-  let html = '<table><thead><tr>';
+  // Detect variables A–F in order of appearance
+  const varSet = new Set();
+  for (const ch of expr) { if (/[A-F]/.test(ch)) varSet.add(ch); }
+  const vars = [...varSet].sort();
+
+  if (vars.length === 0) {
+    document.getElementById('truth-output').innerHTML =
+      '<span style="color:var(--danger);font-family:var(--mono)">No variables found (A–F supported)</span>';
+    return;
+  }
+  if (vars.length > 4) {
+    document.getElementById('truth-output').innerHTML =
+      '<span style="color:var(--danger);font-family:var(--mono)">Max 4 variables supported</span>';
+    return;
+  }
+
+  const rows = 1 << vars.length;
+
+  // Build scrollable wrapper + table
+  let html = '<div style="overflow-x:auto"><table style="min-width:100%"><thead><tr>';
   vars.forEach(v => html += `<th>${v}</th>`);
-  html += `<th style="color:var(--accent)">${expr}</th></tr></thead><tbody>`;
+  html += `<th style="color:var(--accent);min-width:120px">${escHtml(raw)}</th></tr></thead><tbody>`;
 
+  let parseErr = '';
   for (let i = rows - 1; i >= 0; i--) {
+    const env = {};
+    vars.forEach((v, idx) => { env[v] = (i >> (vars.length - 1 - idx)) & 1; });
     html += '<tr>';
-    const vals = {};
-    vars.forEach((v, idx) => {
-      const bit = (i >> (vars.length - 1 - idx)) & 1;
-      vals[v] = bit;
-      html += `<td class="${bit ? 'one' : 'zero'}">${bit}</td>`;
-    });
+    vars.forEach(v => html += `<td class="${env[v] ? 'one' : 'zero'}">${env[v]}</td>`);
     let out;
-    try { out = evalBool(expr, vals) ? 1 : 0; }
-    catch(e) { out = '?'; }
-    html += `<td class="${out === 1 ? 'one' : out === 0 ? 'zero' : ''}" style="font-weight:800">${out}</td>`;
+    try { out = boolEval(expr, env); }
+    catch(e) { out = null; parseErr = e.message; }
+    if (out === null) {
+      html += `<td style="color:var(--danger)">ERR</td>`;
+    } else {
+      html += `<td class="${out ? 'one' : 'zero'}" style="font-weight:800">${out}</td>`;
+    }
     html += '</tr>';
   }
-  html += '</tbody></table>';
+  html += '</tbody></table></div>';
+
+  if (parseErr) {
+    html += `<div style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px">Parse error: ${escHtml(parseErr)}</div>`;
+  }
+
+  // Also show minterms
+  const minterms = [];
+  for (let i = rows - 1; i >= 0; i--) {
+    const env = {};
+    vars.forEach((v, idx) => { env[v] = (i >> (vars.length - 1 - idx)) & 1; });
+    try { if (boolEval(expr, env)) minterms.push(rows - 1 - i); } catch(e){}
+  }
+  if (minterms.length > 0 && !parseErr) {
+    html += `<div style="font-family:var(--mono);font-size:12px;color:var(--accent2);margin-top:10px">
+      Σm(${minterms.sort((a,b)=>a-b).join(', ')}) &nbsp;|&nbsp; ${minterms.length} minterm(s) of ${rows}
+    </div>`;
+  }
+
   document.getElementById('truth-output').innerHTML = html;
 }
 
-function evalBool(expr, vals) {
-  let e = expr;
-  Object.keys(vals).forEach(v => { e = e.replace(new RegExp('\\b' + v + '\\b', 'g'), vals[v]); });
-  e = e.replace(/\bNOT\s+(\d)/g, '(1-$1)');
-  e = e.replace(/\bNAND\b/g, 'NAND');
-  e = e.replace(/\bNOR\b/g, 'NOR');
-  e = e.replace(/\bXNOR\b/g, 'XNOR');
-  e = e.replace(/(\d)\s+AND\s+(\d)/g, '($1&$2)');
-  e = e.replace(/(\d)\s+OR\s+(\d)/g, '($1|$2)');
-  e = e.replace(/(\d)\s+XOR\s+(\d)/g, '($1^$2)');
-  e = e.replace(/(\d)\s+NAND\s+(\d)/g, '(1-($1&$2))');
-  e = e.replace(/(\d)\s+NOR\s+(\d)/g, '(1-($1|$2))');
-  e = e.replace(/(\d)\s+XNOR\s+(\d)/g, '(1-($1^$2))');
-  // multiple passes for complex expressions
-  for (let i = 0; i < 5; i++) {
-    e = e.replace(/(\d)\s+AND\s+(\d)/g, '($1&$2)');
-    e = e.replace(/(\d)\s+OR\s+(\d)/g, '($1|$2)');
-    e = e.replace(/NOT\s+(\d)/g, '(1-$1)');
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* Proper recursive descent parser for boolean expressions.
+   Grammar:
+     expr   := or_expr
+     or_expr  := and_expr (('OR'|'NOR') and_expr)*
+     and_expr := xor_expr (('AND'|'NAND') xor_expr)*
+     xor_expr := not_expr (('XOR'|'XNOR') not_expr)*
+     not_expr := 'NOT' not_expr | atom
+     atom     := VAR | '(' expr ')' | '0' | '1'
+*/
+function boolEval(exprStr, env) {
+  const tokens = tokenise(exprStr);
+  let pos = 0;
+
+  function peek() { return tokens[pos] || null; }
+  function consume(expected) {
+    const t = tokens[pos++];
+    if (expected && t !== expected) throw new Error(`Expected ${expected}, got ${t}`);
+    return t;
   }
-  try { return Function('"use strict";return (' + e + ')')() ? 1 : 0; }
-  catch(e2) { return 0; }
+
+  function parseExpr() { return parseOr(); }
+
+  function parseOr() {
+    let left = parseAnd();
+    while (peek() === 'OR' || peek() === 'NOR') {
+      const op = consume();
+      const right = parseAnd();
+      if (op === 'OR')  left = left | right;
+      if (op === 'NOR') left = (left | right) ^ 1;
+    }
+    return left;
+  }
+
+  function parseAnd() {
+    let left = parseXor();
+    while (peek() === 'AND' || peek() === 'NAND') {
+      const op = consume();
+      const right = parseXor();
+      if (op === 'AND')  left = left & right;
+      if (op === 'NAND') left = (left & right) ^ 1;
+    }
+    return left;
+  }
+
+  function parseXor() {
+    let left = parseNot();
+    while (peek() === 'XOR' || peek() === 'XNOR') {
+      const op = consume();
+      const right = parseNot();
+      if (op === 'XOR')  left = left ^ right;
+      if (op === 'XNOR') left = (left ^ right) ^ 1;
+    }
+    return left;
+  }
+
+  function parseNot() {
+    if (peek() === 'NOT') { consume(); return parseNot() ^ 1; }
+    return parseAtom();
+  }
+
+  function parseAtom() {
+    const t = peek();
+    if (t === '(') {
+      consume('(');
+      const v = parseExpr();
+      consume(')');
+      return v;
+    }
+    if (t === '0') { consume(); return 0; }
+    if (t === '1') { consume(); return 1; }
+    if (t && /^[A-F]$/.test(t)) {
+      consume();
+      if (!(t in env)) throw new Error(`Unknown variable ${t}`);
+      return env[t];
+    }
+    throw new Error(`Unexpected token: ${t}`);
+  }
+
+  const result = parseExpr();
+  if (pos < tokens.length) throw new Error(`Unexpected extra token: ${tokens[pos]}`);
+  return result & 1;
+}
+
+function tokenise(expr) {
+  const tokens = [];
+  let i = 0;
+  while (i < expr.length) {
+    if (/\s/.test(expr[i])) { i++; continue; }
+    // Multi-char keywords
+    const rest = expr.slice(i);
+    const kw = ['XNOR','NAND','NOR','XOR','NOT','AND','OR'].find(k => rest.startsWith(k) && (rest.length === k.length || !/[A-Z0-9]/.test(rest[k.length])));
+    if (kw) { tokens.push(kw); i += kw.length; continue; }
+    if (/[A-F0-9()\.]/.test(expr[i])) { tokens.push(expr[i]); i++; continue; }
+    i++; // skip unknown chars
+  }
+  return tokens;
 }
 
 /* ══════════════════════════════════════════════════
@@ -1602,41 +1763,131 @@ function initBoolLaws() {
 }
 
 function simplifyBool() {
-  const expr = document.getElementById('bool-input').value.trim().toUpperCase();
+  const raw = document.getElementById('bool-input').value.trim();
+  if (!raw) return;
+  const expr = raw.toUpperCase();
   const steps = [];
-  let current = expr;
+
+  // Normalise: replace · with AND, + with OR, ¬/! with NOT
+  let current = expr
+    .replace(/·/g, ' AND ')
+    .replace(/\+/g, ' OR ')
+    .replace(/¬|!/g, 'NOT ')
+    .replace(/\s{2,}/g, ' ').trim();
 
   steps.push({ expr: current, law: 'Original expression' });
 
-  // Apply known simplification patterns
-  const rules = [
-    { from: /A AND \(A OR B\)/g, to: 'A', law: 'Absorption: A·(A+B) = A' },
-    { from: /A OR A AND B/g, to: 'A', law: 'Absorption: A+A·B = A' },
-    { from: /A AND A/g, to: 'A', law: 'Idempotent: A·A = A' },
-    { from: /A OR A/g, to: 'A', law: 'Idempotent: A+A = A' },
-    { from: /A AND 0/g, to: '0', law: 'Null: A·0 = 0' },
-    { from: /A OR 1/g, to: '1', law: 'Null: A+1 = 1' },
-    { from: /A AND 1/g, to: 'A', law: 'Identity: A·1 = A' },
-    { from: /A OR 0/g, to: 'A', law: 'Identity: A+0 = A' },
-    { from: /NOT \(NOT A\)/g, to: 'A', law: 'Double Negation: ¬(¬A) = A' },
+  // Detect all variable names (single letters A-Z)
+  const varNames = [...new Set(current.match(/\b[A-Z]\b/g) || [])];
+
+  // Build rule set dynamically for each variable
+  function makeRules(V) {
+    return [
+      // Double negation
+      { from: new RegExp(`NOT\\s+NOT\\s+${V}`, 'g'), to: V, law: `Double Negation: ¬¬${V} = ${V}` },
+      // Idempotent
+      { from: new RegExp(`${V}\\s+AND\\s+${V}`, 'g'), to: V, law: `Idempotent: ${V}·${V} = ${V}` },
+      { from: new RegExp(`${V}\\s+OR\\s+${V}`, 'g'),  to: V, law: `Idempotent: ${V}+${V} = ${V}` },
+      // Identity
+      { from: new RegExp(`${V}\\s+AND\\s+1`, 'g'), to: V, law: `Identity: ${V}·1 = ${V}` },
+      { from: new RegExp(`1\\s+AND\\s+${V}`, 'g'), to: V, law: `Identity: 1·${V} = ${V}` },
+      { from: new RegExp(`${V}\\s+OR\\s+0`, 'g'),  to: V, law: `Identity: ${V}+0 = ${V}` },
+      { from: new RegExp(`0\\s+OR\\s+${V}`, 'g'),  to: V, law: `Identity: 0+${V} = ${V}` },
+      // Null
+      { from: new RegExp(`${V}\\s+AND\\s+0`, 'g'), to: '0', law: `Null: ${V}·0 = 0` },
+      { from: new RegExp(`0\\s+AND\\s+${V}`, 'g'), to: '0', law: `Null: 0·${V} = 0` },
+      { from: new RegExp(`${V}\\s+OR\\s+1`, 'g'),  to: '1', law: `Null: ${V}+1 = 1` },
+      { from: new RegExp(`1\\s+OR\\s+${V}`, 'g'),  to: '1', law: `Null: 1+${V} = 1` },
+      // Complement
+      { from: new RegExp(`${V}\\s+AND\\s+NOT\\s+${V}`, 'g'), to: '0', law: `Complement: ${V}·¬${V} = 0` },
+      { from: new RegExp(`NOT\\s+${V}\\s+AND\\s+${V}`, 'g'), to: '0', law: `Complement: ¬${V}·${V} = 0` },
+      { from: new RegExp(`${V}\\s+OR\\s+NOT\\s+${V}`, 'g'),  to: '1', law: `Complement: ${V}+¬${V} = 1` },
+      { from: new RegExp(`NOT\\s+${V}\\s+OR\\s+${V}`, 'g'),  to: '1', law: `Complement: ¬${V}+${V} = 1` },
+      // Absorption
+      { from: new RegExp(`${V}\\s+OR\\s+\\(\\s*${V}\\s+AND`, 'g'), to: `${V} OR (ABSORBED`, law: `Absorption: ${V}+(${V}·…) = ${V}` },
+      { from: new RegExp(`${V}\\s+AND\\s+\\(\\s*${V}\\s+OR`, 'g'), to: `${V} AND (ABSORBED`, law: `Absorption: ${V}·(${V}+…) = ${V}` },
+    ];
+  }
+
+  // General constant rules
+  const constRules = [
+    { from: /1\s+AND\s+1/g, to: '1', law: 'Constant: 1·1 = 1' },
+    { from: /0\s+OR\s+0/g,  to: '0', law: 'Constant: 0+0 = 0' },
+    { from: /0\s+AND\s+0/g, to: '0', law: 'Constant: 0·0 = 0' },
+    { from: /1\s+OR\s+0/g,  to: '1', law: 'Constant: 1+0 = 1' },
+    { from: /0\s+OR\s+1/g,  to: '1', law: 'Constant: 0+1 = 1' },
+    { from: /NOT\s+0/g,     to: '1', law: 'NOT 0 = 1' },
+    { from: /NOT\s+1/g,     to: '0', law: 'NOT 1 = 0' },
+    // Remove trivial parens around single token
+    { from: /\(\s*([A-Z01])\s*\)/g, to: '$1', law: 'Remove trivial parentheses' },
   ];
 
-  rules.forEach(r => {
-    const next = current.replace(r.from, r.to);
-    if (next !== current) { steps.push({ expr: next, law: r.law }); current = next; }
-  });
+  // Run multiple passes
+  let changed = true;
+  let iterations = 0;
+  while (changed && iterations < 30) {
+    changed = false;
+    iterations++;
 
-  if (steps.length === 1) steps.push({ expr: current, law: 'No further simplification found' });
+    for (const V of varNames) {
+      for (const rule of makeRules(V)) {
+        const next = current.replace(rule.from, rule.to).replace(/\s{2,}/g,' ').trim();
+        if (next !== current) {
+          // Clean up absorption placeholder
+          const cleaned = next.replace(/\(ABSORBED[^)]*\)/g, '').replace(/\s{2,}/g,' ').trim();
+          if (cleaned !== current) {
+            steps.push({ expr: cleaned, law: rule.law });
+            current = cleaned;
+            changed = true;
+          }
+        }
+      }
+    }
 
-  document.getElementById('bool-steps').innerHTML = steps.map((s, i) => `
-    <div class="bool-step">
-      <div class="step-num">${i + 1}</div>
-      <div>
-        <div class="step-expr">${s.expr}</div>
-        <div class="step-law">${s.law}</div>
-      </div>
-    </div>
-  `).join('');
+    for (const rule of constRules) {
+      const next = current.replace(rule.from, rule.to).replace(/\s{2,}/g,' ').trim();
+      if (next !== current) {
+        steps.push({ expr: next, law: rule.law });
+        current = next;
+        changed = true;
+      }
+    }
+  }
+
+  // Final: verify by truth table if possible
+  let verifyNote = '';
+  try {
+    const vars = [...new Set(current.match(/\b[A-Z]\b/g) || [])].sort();
+    if (vars.length <= 4 && vars.length > 0) {
+      const originalVars = [...new Set(expr.match(/\b[A-Z]\b/g) || [])].sort();
+      const allVars = [...new Set([...vars, ...originalVars])].sort();
+      const rows = 1 << allVars.length;
+      let match = true;
+      for (let i = 0; i < rows; i++) {
+        const env = {};
+        allVars.forEach((v, idx) => { env[v] = (i >> (allVars.length - 1 - idx)) & 1; });
+        const orig = boolEval(expr, env);
+        const simp = boolEval(current, env);
+        if (orig !== simp) { match = false; break; }
+      }
+      verifyNote = match
+        ? '<span style="color:var(--accent)">✓ Verified: simplified expression is equivalent to original</span>'
+        : '<span style="color:var(--danger)">⚠ Warning: expressions may differ — check manually</span>';
+    }
+  } catch(e) {}
+
+  if (steps.length === 1) steps.push({ expr: current, law: 'Already in minimal form — no rules apply' });
+
+  document.getElementById('bool-steps').innerHTML =
+    steps.map((s, i) => `
+      <div class="bool-step">
+        <div class="step-num">${i + 1}</div>
+        <div style="flex:1">
+          <div class="step-expr">${escHtml(s.expr)}</div>
+          <div class="step-law">${escHtml(s.law)}</div>
+        </div>
+      </div>`).join('') +
+    (verifyNote ? `<div style="margin-top:12px;font-family:var(--mono);font-size:11px">${verifyNote}</div>` : '');
 }
 
 /* ══════════════════════════════════════════════════
@@ -1784,6 +2035,20 @@ function cbClear() {
 function initCircuit() {
   cbCanvas = document.getElementById('circuit-canvas');
   cbCtx = cbCanvas.getContext('2d');
+
+  // Size canvas to container width
+  function resizeCanvas() {
+    const wrap = cbCanvas.parentElement;
+    if (!wrap) return;
+    const w = wrap.clientWidth || 820;
+    const h = Math.max(380, Math.round(w * 0.55));
+    cbCanvas.width = w;
+    cbCanvas.height = h;
+    drawCB();
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
   cbCanvas.addEventListener('click', cbHandleClick);
   cbCanvas.addEventListener('contextmenu', e => { e.preventDefault(); cbHandleRight(e); });
   cbCanvas.addEventListener('mousemove', cbHandleMove);

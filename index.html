@@ -559,7 +559,12 @@ td.zero { color: var(--muted); }
     </div>
   </nav>
   <div class="sidebar-footer">
-    LogicForge © 2025<br>Digital Logic Tools
+    LogicForge © 2025<br>Digital Logic Tools<br>
+    <a href="mailto:logicforce@gmail.com?subject=LogicForge Feedback"
+       style="color:var(--accent);font-family:var(--mono);font-size:10px;text-decoration:none;margin-top:6px;display:inline-block"
+       title="Send email to logicforce@gmail.com">
+      ✉ logicforce@gmail.com
+    </a>
   </div>
 </aside>
 
@@ -734,11 +739,19 @@ td.zero { color: var(--muted); }
   <div class="page-header">
     <div class="page-tag">// tool_02</div>
     <div class="page-title">Logic Gates</div>
-    <div class="page-desc">Click inputs to toggle them and observe the output. All gates drawn to IEEE standard.</div>
+    <div class="page-desc">Click inputs to toggle 0/1 and see the output update live. Use the selector to choose how many inputs to display for multi-input gates.</div>
   </div>
 
-  <div class="grid3">
-    <!-- Each gate will be rendered by JS -->
+  <div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Input count for AND / OR / NAND / NOR / XOR:</div>
+    <div style="display:flex;gap:6px">
+      <button class="palette-btn active" id="gate-inp-2" onclick="setGateInputs(2,this)">2 inputs</button>
+      <button class="palette-btn" id="gate-inp-3" onclick="setGateInputs(3,this)">3 inputs</button>
+      <button class="palette-btn" id="gate-inp-4" onclick="setGateInputs(4,this)">4 inputs</button>
+    </div>
+  </div>
+
+  <div class="grid3" id="gates-grid">
     <div id="gate-and"></div>
     <div id="gate-or"></div>
     <div id="gate-not"></div>
@@ -1443,122 +1456,137 @@ function convertAll() {
 }
 
 /* ══════════════════════════════════════════════════
-   LOGIC GATES (SVG drawings)
+   LOGIC GATES — supports 1–4 inputs
 ══════════════════════════════════════════════════ */
 const gateState = {};
+let gateInputCount = 2; // controlled by UI
+
+const GATE_DEFS = [
+  { id: 'and',    label: 'AND Gate',    fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r&v,1) },
+  { id: 'or',     label: 'OR Gate',     fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r|v,0) },
+  { id: 'not',    label: 'NOT Gate',    fixedInputs: 1,    fn: a => a^1 },
+  { id: 'nand',   label: 'NAND Gate',   fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r&v,1)^1 },
+  { id: 'nor',    label: 'NOR Gate',    fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r|v,0)^1 },
+  { id: 'xor',    label: 'XOR Gate',    fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r^v,0) },
+  { id: 'xnor',   label: 'XNOR Gate',   fixedInputs: null, fn: (...a) => a.reduce((r,v)=>r^v,0)^1 },
+  { id: 'buffer', label: 'Buffer',      fixedInputs: 1,    fn: a => a },
+];
+
+function setGateInputs(n, btn) {
+  gateInputCount = n;
+  document.querySelectorAll('[id^="gate-inp-"]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  initGates();
+}
 
 function initGates() {
-  const gates = [
-    { id: 'and',    label: 'AND Gate',    inputs: 2, fn: (a,b) => a & b },
-    { id: 'or',     label: 'OR Gate',     inputs: 2, fn: (a,b) => a | b },
-    { id: 'not',    label: 'NOT Gate',    inputs: 1, fn: (a) => a^1 },
-    { id: 'nand',   label: 'NAND Gate',   inputs: 2, fn: (a,b) => (a&b)^1 },
-    { id: 'nor',    label: 'NOR Gate',    inputs: 2, fn: (a,b) => (a|b)^1 },
-    { id: 'xor',    label: 'XOR Gate',    inputs: 2, fn: (a,b) => a^b },
-    { id: 'xnor',   label: 'XNOR Gate',   inputs: 2, fn: (a,b) => (a^b)^1 },
-    { id: 'buffer', label: 'Buffer',      inputs: 1, fn: (a) => a },
-  ];
-  gates.forEach(g => {
-    if (!gateState[g.id]) gateState[g.id] = { a: 0, b: 0 };
-    renderGate(g);
+  GATE_DEFS.forEach(g => {
+    const nIn = g.fixedInputs !== null ? g.fixedInputs : gateInputCount;
+    if (!gateState[g.id]) gateState[g.id] = {};
+    // Ensure all input slots exist
+    for (let i = 0; i < nIn; i++) {
+      if (gateState[g.id]['i'+i] === undefined) gateState[g.id]['i'+i] = 0;
+    }
+    renderGate(g, nIn);
   });
 }
 
-function renderGate(g) {
-  const st = gateState[g.id];
-  const a = st.a, b = st.b;
-  const out = g.inputs === 1 ? g.fn(a) : g.fn(a, b);
-  const clrHi = '#00FF88', clrLo = '#3A3A50', textClr = '#E8E8F0';
-  const wire = v => v ? clrHi : clrLo;
-
+function renderGate(g, nIn) {
   const container = document.getElementById('gate-' + g.id);
   if (!container) return;
 
-  let gateShape = '';
-  const W = 260, H = 160;
-  const cx = 130, cy = 80;
+  const st = gateState[g.id];
+  const inputVals = [];
+  for (let i = 0; i < nIn; i++) inputVals.push(st['i'+i] || 0);
+  const out = g.fn(...inputVals);
 
+  const clrHi = '#00FF88', clrLo = '#3A3A50', textClr = '#E8E8F0';
+  const wire = v => v ? clrHi : clrLo;
+
+  const W = 260;
+  const H = Math.max(160, nIn * 32 + 60);
+  const gY = H / 2; // gate centre Y
+
+  // Gate shape (centred at gY)
+  const gTop = gY - 40, gBot = gY + 40;
+  let gateShape = '';
   if (g.id === 'and') {
-    gateShape = `<path d="M80,40 L80,120 L110,120 A40,40 0 0,0 110,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} L80,${gBot} L110,${gBot} A40,40 0 0,0 110,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'or') {
-    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} Q95,${gY} 80,${gBot} Q110,${gBot-10} 145,${gY} Q110,${gTop+10} 80,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'not' || g.id === 'buffer') {
-    gateShape = `<path d="M80,40 L80,120 L150,80 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
-    if (g.id === 'not') gateShape += `<circle cx="155" cy="80" r="6" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} L80,${gBot} L150,${gY} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    if (g.id === 'not') gateShape += `<circle cx="155" cy="${gY}" r="6" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'nand') {
-    gateShape = `<path d="M80,40 L80,120 L110,120 A40,40 0 0,0 110,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
-    gateShape += `<circle cx="157" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} L80,${gBot} L110,${gBot} A40,40 0 0,0 110,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="157" cy="${gY}" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'nor') {
-    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
-    gateShape += `<circle cx="152" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} Q95,${gY} 80,${gBot} Q110,${gBot-10} 145,${gY} Q110,${gTop+10} 80,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="152" cy="${gY}" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'xor') {
-    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
-    gateShape += `<path d="M72,40 Q87,80 72,120" fill="none" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} Q95,${gY} 80,${gBot} Q110,${gBot-10} 145,${gY} Q110,${gTop+10} 80,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<path d="M72,${gTop} Q87,${gY} 72,${gBot}" fill="none" stroke="${textClr}" stroke-width="2"/>`;
   } else if (g.id === 'xnor') {
-    gateShape = `<path d="M80,40 Q95,80 80,120 Q110,110 145,80 Q110,50 80,40 Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
-    gateShape += `<path d="M72,40 Q87,80 72,120" fill="none" stroke="${textClr}" stroke-width="2"/>`;
-    gateShape += `<circle cx="152" cy="80" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape = `<path d="M80,${gTop} Q95,${gY} 80,${gBot} Q110,${gBot-10} 145,${gY} Q110,${gTop+10} 80,${gTop} Z" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<path d="M72,${gTop} Q87,${gY} 72,${gBot}" fill="none" stroke="${textClr}" stroke-width="2"/>`;
+    gateShape += `<circle cx="152" cy="${gY}" r="7" fill="#1A1A2A" stroke="${textClr}" stroke-width="2"/>`;
   }
 
-  // Wire lines
-  const outX = (g.id === 'nand' || g.id === 'nor' || g.id === 'xnor') ? 165 : (g.id === 'not') ? 162 : 150;
-  const inputsHtml = g.inputs === 2 ? `
-    <!-- Input A wire -->
-    <line x1="30" y1="60" x2="80" y2="60" stroke="${wire(a)}" stroke-width="2.5"/>
-    <!-- Input B wire -->
-    <line x1="30" y1="100" x2="80" y2="100" stroke="${wire(b)}" stroke-width="2.5"/>
-    <!-- Output wire -->
-    <line x1="${outX}" y1="80" x2="230" y2="80" stroke="${wire(out)}" stroke-width="2.5"/>
-    <!-- A toggle -->
-    <rect x="10" y="50" width="22" height="20" rx="4" fill="${a ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(a)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','a')"/>
-    <text x="21" y="64" fill="${wire(a)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${a}</text>
-    <!-- B toggle -->
-    <rect x="10" y="90" width="22" height="20" rx="4" fill="${b ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(b)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','b')"/>
-    <text x="21" y="104" fill="${wire(b)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${b}</text>
-  ` : `
-    <line x1="30" y1="80" x2="80" y2="80" stroke="${wire(a)}" stroke-width="2.5"/>
-    <line x1="${outX}" y1="80" x2="230" y2="80" stroke="${wire(out)}" stroke-width="2.5"/>
-    <rect x="10" y="70" width="22" height="20" rx="4" fill="${a ? 'rgba(0,255,136,0.2)':'var(--bg3)'}" stroke="${wire(a)}" stroke-width="1.5" style="cursor:pointer" onclick="toggleInput('${g.id}','a')"/>
-    <text x="21" y="84" fill="${wire(a)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${a}</text>
+  const outX = (['nand','nor','xnor'].includes(g.id)) ? 165 : g.id === 'not' ? 162 : 150;
+  const inputLabels = 'ABCDEFGH';
+
+  // Input wires — evenly spaced over gate height
+  const spacing = nIn > 1 ? 80 / (nIn - 1) : 0;
+  let inpHtml = '';
+  for (let i = 0; i < nIn; i++) {
+    const iy = nIn === 1 ? gY : (gY - 40) + i * spacing;
+    const v = inputVals[i];
+    inpHtml += `
+      <line x1="30" y1="${iy}" x2="80" y2="${iy}" stroke="${wire(v)}" stroke-width="2"/>
+      <rect x="8" y="${iy-10}" width="22" height="20" rx="4"
+        fill="${v ? 'rgba(0,255,136,0.2)':'#1A1A24'}" stroke="${wire(v)}" stroke-width="1.5"
+        style="cursor:pointer" onclick="toggleInput('${g.id}','i${i}')"/>
+      <text x="19" y="${iy+4}" fill="${wire(v)}" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle">${v}</text>
+      <text x="33" y="${iy-3}" fill="${clrLo}" font-family="monospace" font-size="9">${inputLabels[i]}</text>
+    `;
+  }
+
+  // Output
+  inpHtml += `
+    <line x1="${outX}" y1="${gY}" x2="230" y2="${gY}" stroke="${wire(out)}" stroke-width="2.5"/>
+    <circle cx="228" cy="${gY}" r="5" fill="${wire(out)}"/>
+    <text x="240" y="${gY+4}" fill="${wire(out)}" font-family="monospace" font-size="13" font-weight="700">${out}</text>
+    <text x="207" y="${gY-6}" fill="${clrLo}" font-family="monospace" font-size="10">Y</text>
   `;
+
+  // Expression label
+  const exprLabel = nIn === 1
+    ? (g.id === 'not' ? 'Y = ¬A' : 'Y = A')
+    : `Y = ${inputLabels.slice(0,nIn).split('').join(g.id==='or'||g.id==='nor'?'+':g.id.includes('xor')?'⊕':'·')}${g.id==='nand'||g.id==='nor'||g.id==='xnor'?' (inv)':''}`;
 
   container.innerHTML = `
     <div class="card" style="padding:16px">
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:12px">${g.label}</div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:6px">${g.label}${nIn > 1 ? ` (${nIn}-input)` : ''}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px">${exprLabel}</div>
       <div class="gate-canvas-wrap">
         <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-          ${inputsHtml}
+          ${inpHtml}
           ${gateShape}
-          <!-- Output dot -->
-          <circle cx="228" cy="80" r="5" fill="${wire(out)}" stroke="${wire(out)}" stroke-width="1"/>
-          <!-- Output label -->
-          <text x="240" y="84" fill="${wire(out)}" font-family="monospace" font-size="13" font-weight="700">${out}</text>
-          ${g.inputs === 2 ? `
-          <text x="33" y="59" fill="${clrLo}" font-family="monospace" font-size="10">A</text>
-          <text x="33" y="99" fill="${clrLo}" font-family="monospace" font-size="10">B</text>
-          ` : `<text x="33" y="79" fill="${clrLo}" font-family="monospace" font-size="10">A</text>`}
-          <text x="207" y="74" fill="${clrLo}" font-family="monospace" font-size="10">Y</text>
         </svg>
       </div>
-      <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Click input boxes to toggle</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;text-align:center">Click input boxes to toggle</div>
     </div>
   `;
 }
 
-function toggleInput(gid, inp) {
-  gateState[gid][inp] ^= 1;
-  const gates = [
-    { id: 'and', label: 'AND Gate', inputs: 2, fn: (a,b) => a&b },
-    { id: 'or', label: 'OR Gate', inputs: 2, fn: (a,b) => a|b },
-    { id: 'not', label: 'NOT Gate', inputs: 1, fn: a => a^1 },
-    { id: 'nand', label: 'NAND Gate', inputs: 2, fn: (a,b) => (a&b)^1 },
-    { id: 'nor', label: 'NOR Gate', inputs: 2, fn: (a,b) => (a|b)^1 },
-    { id: 'xor', label: 'XOR Gate', inputs: 2, fn: (a,b) => a^b },
-    { id: 'xnor', label: 'XNOR Gate', inputs: 2, fn: (a,b) => (a^b)^1 },
-    { id: 'buffer', label: 'Buffer', inputs: 1, fn: a => a },
-  ];
-  const g = gates.find(x => x.id === gid);
-  if (g) renderGate(g);
+function toggleInput(gid, slot) {
+  if (!gateState[gid]) gateState[gid] = {};
+  gateState[gid][slot] = (gateState[gid][slot] || 0) ^ 1;
+  const g = GATE_DEFS.find(x => x.id === gid);
+  if (g) {
+    const nIn = g.fixedInputs !== null ? g.fixedInputs : gateInputCount;
+    renderGate(g, nIn);
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -1569,41 +1597,47 @@ function generateTruth() {
   if (!raw) return;
   const expr = raw.toUpperCase();
 
-  // Detect variables A–F in order of appearance
+  // Use the tokeniser to find only variable tokens (single A-F)
+  // This prevents letters inside keywords like N(AND), N(OR), XO(R) being picked up
+  let toksForVars;
+  try { toksForVars = tokenise(expr); } catch(e) { toksForVars = []; }
   const varSet = new Set();
-  for (const ch of expr) { if (/[A-F]/.test(ch)) varSet.add(ch); }
+  toksForVars.forEach(t => { if (/^[A-F]$/.test(t)) varSet.add(t); });
   const vars = [...varSet].sort();
 
   if (vars.length === 0) {
     document.getElementById('truth-output').innerHTML =
-      '<span style="color:var(--danger);font-family:var(--mono)">No variables found (A–F supported)</span>';
+      '<span style="color:var(--danger);font-family:var(--mono)">No variables found. Use single letters A–F as variables.</span>';
     return;
   }
-  if (vars.length > 4) {
+  if (vars.length > 5) {
     document.getElementById('truth-output').innerHTML =
-      '<span style="color:var(--danger);font-family:var(--mono)">Max 4 variables supported</span>';
+      '<span style="color:var(--danger);font-family:var(--mono)">Max 5 variables supported</span>';
     return;
   }
 
   const rows = 1 << vars.length;
 
-  // Build scrollable wrapper + table
-  let html = '<div style="overflow-x:auto"><table style="min-width:100%"><thead><tr>';
+  // Table: only columns for variables that actually appear in the expression
+  let html = '<div style="overflow-x:auto"><table><thead><tr>';
   vars.forEach(v => html += `<th>${v}</th>`);
-  html += `<th style="color:var(--accent);min-width:120px">${escHtml(raw)}</th></tr></thead><tbody>`;
+  html += `<th style="color:var(--accent);min-width:110px">${escHtml(raw)}</th></tr></thead><tbody>`;
 
   let parseErr = '';
+  const minterms = [];
+
   for (let i = rows - 1; i >= 0; i--) {
     const env = {};
     vars.forEach((v, idx) => { env[v] = (i >> (vars.length - 1 - idx)) & 1; });
     html += '<tr>';
     vars.forEach(v => html += `<td class="${env[v] ? 'one' : 'zero'}">${env[v]}</td>`);
-    let out;
-    try { out = boolEval(expr, env); }
-    catch(e) { out = null; parseErr = e.message; }
+    let out = null;
+    try { out = boolEval(expr, env); } catch(e) { if (!parseErr) parseErr = e.message; }
     if (out === null) {
       html += `<td style="color:var(--danger)">ERR</td>`;
     } else {
+      const mIdx = rows - 1 - i;
+      if (out) minterms.push(mIdx);
       html += `<td class="${out ? 'one' : 'zero'}" style="font-weight:800">${out}</td>`;
     }
     html += '</tr>';
@@ -1611,20 +1645,9 @@ function generateTruth() {
   html += '</tbody></table></div>';
 
   if (parseErr) {
-    html += `<div style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px">Parse error: ${escHtml(parseErr)}</div>`;
-  }
-
-  // Also show minterms
-  const minterms = [];
-  for (let i = rows - 1; i >= 0; i--) {
-    const env = {};
-    vars.forEach((v, idx) => { env[v] = (i >> (vars.length - 1 - idx)) & 1; });
-    try { if (boolEval(expr, env)) minterms.push(rows - 1 - i); } catch(e){}
-  }
-  if (minterms.length > 0 && !parseErr) {
-    html += `<div style="font-family:var(--mono);font-size:12px;color:var(--accent2);margin-top:10px">
-      Σm(${minterms.sort((a,b)=>a-b).join(', ')}) &nbsp;|&nbsp; ${minterms.length} minterm(s) of ${rows}
-    </div>`;
+    html += `<div style="font-family:var(--mono);font-size:11px;color:var(--danger);margin-top:8px;padding:8px;background:var(--bg);border-radius:4px">⚠ ${escHtml(parseErr)} — operators: AND OR NOT NAND NOR XOR XNOR</div>`;
+  } else if (minterms.length > 0) {
+    html += `<div style="font-family:var(--mono);font-size:12px;color:var(--accent2);margin-top:10px;padding:8px;background:var(--bg);border-radius:4px">Σm(${minterms.sort((a,b)=>a-b).join(', ')}) · ${minterms.length}/${rows} rows</div>`;
   }
 
   document.getElementById('truth-output').innerHTML = html;
